@@ -173,8 +173,8 @@ LexType Lexer::getLexemeType(string lexeme) {
 		if(lexeme == ")") return TyRpar;
 		if(lexeme == "+") return TyPlus;
 		if(lexeme == "-") return TyMinus;
-		if(lexeme == "<") return TyLess;
-		if(lexeme == ">") return TyOver;
+		if(lexeme == "<" || lexeme == "minor") return TyLess;
+		if(lexeme == ">" || lexeme == "major") return TyOver;
 		if(lexeme == ";") return TySemicolon;
 		if(lexeme == "si") return TyIf;
 		if(lexeme == "aliud") return TyElse;
