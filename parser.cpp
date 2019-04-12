@@ -73,14 +73,40 @@ Node* Parser::test(){
 	glub += 1;
 	for(int i = 0 ; i < glub; i++)printf("  ");
 	n = summa();
-	if(token.type == TyLess || token.type == TyOver){
+	if(token.type == TyLess){
+		n->son1 = n;		
+		n->Type = token.type;	
+		n->lexeme = token.lexeme.c_str();
+		token = lexer->GetToken();
+		if(token.type == TyEqual){
+			n->Type = LessEq;
+			n->lexeme = "<=";
+			token = lexer->GetToken();
+		}
+		glub += 1;
+		for(int i = 0 ; i < glub; i++)printf("  ");
+		n->son2 = summa();			
+	}else if(token.type == TyOver){
+		n->son1 = n;		
+		n->Type = token.type;	
+		n->lexeme = token.lexeme.c_str();
+		token = lexer->GetToken();
+		if(token.type == TyEqual){
+			n->Type = OverEq;
+			n->lexeme = ">=";
+			token = lexer->GetToken();
+		}
+		glub += 1;
+		for(int i = 0 ; i < glub; i++)printf("  ");
+		n->son2 = summa();			
+	}else if(token.type == TyEql){
 		n->son1 = n;		
 		n->Type = token.type;	
 		n->lexeme = token.lexeme.c_str();
 		token = lexer->GetToken();
 		glub += 1;
 		for(int i = 0 ; i < glub; i++)printf("  ");
-		n->son2 = summa();			
+		n->son2 = summa();	
 	}
 	return n;
 }
@@ -149,6 +175,41 @@ Node* Parser::step(){
 			for(int i = 0 ; i < glub; i++)printf("  ");
 			n->son3 = step();
 		}
+	}else if(token.type == TyWhile){
+		n->Type = TyWhile;
+		n->lexeme = token.lexeme.c_str();
+		token = lexer->GetToken();
+		n->son1 = par_exp();		
+		n->son2 = step();
+	}else if(token.type == TyDo){
+		n->Type = TyDo;
+		n->lexeme = token.lexeme.c_str();
+		token = lexer->GetToken();
+		n->son1 = step();
+		if(token.type != TyWhile){
+			cout << "while expected " << " string " << token.str << " position " << token.pos << endl;
+			exit(-1);
+		}
+		token = lexer->GetToken();		
+		n->son2 = par_exp();
+		if(token.type != TySemicolon){
+			cout << "; expected " << " string " << token.str << " position " << token.pos << endl;
+			exit(-1);
+		}
+	}else if(token.type == TySemicolon){
+		n->Type = 0;
+		n->lexeme = "";
+		token = lexer->GetToken();			
+	}else if(token.type == TyLbra){
+		n->Type = 0;
+		n->lexeme = token.lexeme.c_str();
+		while(token.type != TyRbra){
+			n->son1 = n;
+			n->Type = SEQ;
+			n->son2 = step();
+		}
+		n->lexeme = token.lexeme.c_str();
+		
 	}else{
 		n->Type = Expr;
 		n->lexeme = "expression";
@@ -179,7 +240,6 @@ Node Parser::Parun(string s){
 		cout << "strange error" << endl;
 		exit(-1);		
 	}
-	//EOF
 	return node;	
 }
 

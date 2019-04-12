@@ -10,7 +10,7 @@ int main() {
 	//if(!fin.is_open()) printf("g");
 	Lexer lexer;
 	Parser parser(&lexer);
-	string h ="SPQR si(a < 3) a = 3;";
+	string h ="SPQR si(a paritas 3) a = 3;";
 	//getline (fin, h, '\0' );
 	cout << h << endl << endl;
 	h = lexer.run(h);

@@ -185,6 +185,7 @@ LexType Lexer::getLexemeType(string lexeme) {
 		if(lexeme == "filum") return TyStringname;
 		if(lexeme == "QED") return TyReturn;
 		if(lexeme == "SPQR") return TyMain;
+		if(lexeme == "paritas") return TyEql;
 		if(IsIdentif(lexeme)) return TyIdentifier;
 		if(IsNumber(lexeme)) return TyNumber;
 		if(IsString(lexeme)) return TyString;
