@@ -56,10 +56,10 @@ Node* Parser::summa(){
 		for(int i = 0 ; i < glub; i++)printf("  ");
 	n = term();
 	while(token.type == TyMinus || token.type == TyPlus){
-		token = lexer->GetToken();
 		n->son1 = n;			
 		n->Type = token.type;
 		n->lexeme = token.lexeme.c_str();
+		token = lexer->GetToken();
 		glub += 1;
 		for(int i = 0 ; i < glub; i++)printf("  ");
 		n->son2 = term();
@@ -120,7 +120,7 @@ Node* Parser::par_exp(){
 		for(int i = 0 ; i < glub; i++)printf("  ");
 	n = express();
 	if(token.type != TyRpar){
-		cout << "( expected " << " string " << token.str << " position " << token.pos << endl;
+		cout << ") expected " << " string " << token.str << " position " << token.pos << endl;
 		exit(-1);
 	}
 	token = lexer->GetToken();
