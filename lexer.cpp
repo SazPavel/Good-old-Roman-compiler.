@@ -1,6 +1,4 @@
-#include <string>
-#include <iostream>
-#include "lexer.h"
+#include "roman.h"
 
 using namespace std;
 
@@ -11,7 +9,7 @@ Lexer::Lexer(){
 	specials = "(){};=+-*/";
 	mode = LeNormal;
 	length = position = nustring = pos = 0;
-	IsMul = IsLF = IsSlash = false;
+	IsLF = IsSlash = false;
 }
 
 Lexer::~Lexer(){
@@ -120,13 +118,13 @@ string Lexer::step(){
 string Lexer::run(string s){
 	start(s);
 	string result;
-	while(position < length){
+	while(position < length){	
 		int temppos = pos;
 		if(s[position] == 10 || s[position] == 13)//13
 			temppos = 0;
 		string lex = step();
 		result += lex + "\n";
-		Token token = GetToken(lex);
+		Token token = GetTokentest(lex);
 		token.str = nustring;
 		token.pos = temppos;// - lex.length();
 		cout << token.type << "\t:type  " << token.lexeme << "\t :lexeme\t" <<  token.str << " :string\t" <<  token.pos << " :position" << endl;
@@ -177,12 +175,12 @@ LexType Lexer::getLexemeType(string lexeme) {
 		if(lexeme == "-") return TyMinus;
 		if(lexeme == "<") return TyLess;
 		if(lexeme == ">") return TyOver;
-		if(lexeme == ";") return TySEMICOLON;
+		if(lexeme == ";") return TySemicolon;
 		if(lexeme == "si") return TyIf;
 		if(lexeme == "aliud") return TyElse;
 		if(lexeme == "facite") return TyDo;
 		if(lexeme == "dum") return TyWhile;
-		if(lexeme == "totus") return TyINT;
+		if(lexeme == "totus") return TyInt;
 		if(lexeme == "verum") return TyFloat;
 		if(lexeme == "filum") return TyStringname;
 		if(lexeme == "QED") return TyReturn;
@@ -194,10 +192,29 @@ LexType Lexer::getLexemeType(string lexeme) {
 		return TyError;
 }
 
-
-Token Lexer::GetToken(string lex){
+Token Lexer::GetTokentest(string lex){
 	Token token;
 	token.lexeme = lex;
 	token.type = getLexemeType(lex);
 	return token;
 }
+
+
+Token Lexer::GetToken(){
+	int temppos = pos;
+	if(s[position] == 10 || s[position] == 13)//13
+		temppos = 0;
+	string lex = step();
+	Token token;
+	token.lexeme = lex;
+	token.type = getLexemeType(lex);
+	token.str = nustring;
+	token.pos = temppos;// - lex.length();
+	if(token.type == TyError){
+		cout << "error in string " << token.str << " position " << token.pos << endl;
+	}
+	return token;
+}
+
+
+

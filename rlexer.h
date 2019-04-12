@@ -11,9 +11,9 @@ using namespace std;
 // 'si': IF, 'aliud': ELSE, 'facite': DO, 'dum': WHILE, 'totus': INT, 'verum': FLOAT 'QED': return 'SPQR': main, 'filum': string
 
 
-enum LexerMode { LeNormal, LeString, LeComment };
-enum LexType { TyError, TyIdentifier, TyNumber, TyString, TyLbra, TyRbra, TyEqual, TyLpar, TyRpar, TyPlus, TyMinus, TyLess, TyOver, TyIf, TyElse, TyDo, TyWhile, TySEMICOLON, TyINT, TyFloat, TyStringname, TyReturn, TyMain, TyEOF};
+enum LexType { TyError, TyIdentifier, TyNumber, TyString, TyLbra, TyRbra, TyEqual, TyLpar, TyRpar, TyPlus, TyMinus, TyLess, TyOver, TyIf, TyElse, TyDo, TyWhile, TySemicolon, TyInt, TyFloat, TyStringname, TyReturn, TyMain, TySet, TyEOF, Expr};
 	
+enum LexerMode { LeNormal, LeString, LeComment };
 class Token {
 	public:
 		string lexeme;
@@ -41,17 +41,18 @@ class Lexer {
 		
 		LexType getLexemeType(string lexeme);
 		
-		Token GetToken(string lexeme);
+		Token GetToken();
 		
+		Token GetTokentest(string lex);
 	protected:
-		string s;
-		string numbers, letters, specials;
 		int pos;//позиция в строке
 		int length;//длина полученной строки
 		int nustring;//номер строки
 		int position;//общая позиция
+		string s;
+		string numbers, letters, specials;
 		LexerMode mode;
-		bool IsLF, IsMul,IsSlash;
+		bool IsLF, IsSlash;
 };
 
 
