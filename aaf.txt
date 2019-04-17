@@ -1,3 +1,4 @@
-SPQR 
-si(a paritas 3) 
-a = 3;
+SPQR{
+si(f < 1)
+    f = 1;
+}

@@ -4,29 +4,29 @@
 
 using namespace std;
 
-struct Node{
+struct node{
 	int Type;
-	const char* lexeme;
-	struct Node *son1;// = NULL;
-	struct Node *son2;// = NULL;
-	struct Node *son3;// = NULL;
+	string lexeme;
+	node *son1 = NULL;
+	node *son2 = NULL;
+	node *son3 = NULL;
 };
 
 class Parser {
 	public:
-		Parser(Lexer *lexer);
+		Parser(Lexer *lexer, Token *token);
 		~Parser();
-		Node Parun(string str);
-		Node* step();
-		Node* express();	
-		Node* par_exp();
-		Node* test();
-		Node* summa();
-		Node* term();
+		node Parun(string str);
+		node* step(int flag);
+		node* express();	
+		node* par_exp(int t);
+		node* test();
+		node* summa();
+		node* term();
 	
 	protected:
 		int glub;
 		Lexer *lexer;
-		Token token;
+		Token *token;
 		
 };

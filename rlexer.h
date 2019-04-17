@@ -5,7 +5,7 @@
 using namespace std;
 
 // специальные символы языка
-// '{': LBRA, '}': RBRA, '=': EQUAL, ';': SEMICOLON, '(': LPAR, ')': RPAR, '+': PLUS, '-': MINUS, '<': LESS '>': OVER
+// '{': LBRA, '}': RBRA, '=': EQUAL, ';': SEMICOLON, '(': LPAR, ')': RPAR, '+': PLUS, '-': MINUS, '<' minor: LESS '>'major: OVER
 
 // ключевые слова
 // 'si': IF, 'aliud': ELSE, 'facite': DO, 'dum': WHILE, 'totus': INT, 'verum': FLOAT 'QED': return 'SPQR': main, 'filum': string, 'paritas': equal
@@ -16,6 +16,8 @@ enum LexType { TyError, TyIdentifier, TyNumber, TyString, TyLbra, TyRbra, TyEqua
 enum LexerMode { LeNormal, LeString, LeComment };
 class Token {
 	public:
+		Token();
+		~Token();
 		string lexeme;
 		LexType type;
 		int str;
@@ -44,15 +46,15 @@ class Lexer {
 		Token GetToken();
 		
 		Token GetTokentest(string lex);
-	protected:
 		int pos;//позиция в строке
 		int length;//длина полученной строки
 		int nustring;//номер строки
 		int position;//общая позиция
+	protected:
 		string s;
 		string numbers, letters, specials;
 		LexerMode mode;
-		bool IsLF, IsSlash;
+		bool IsLF, IsSlash, twoLF;
 };
 
 

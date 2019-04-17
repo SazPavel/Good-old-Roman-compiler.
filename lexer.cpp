@@ -3,13 +3,20 @@
 using namespace std;
 
 
+Token::Token(){
+}
+
+
+Token::~Token(){
+}
+
 Lexer::Lexer(){
 	numbers = "0123456789";
 	letters = "_ABCDEFGHIJKLMNOPQRSTUYWXYZabcdefghijklmnopqrstuvwxyz";
 	specials = "(){};=+-*/";
 	mode = LeNormal;
 	length = position = nustring = pos = 0;
-	IsLF = IsSlash = false;
+	IsLF = IsSlash = twoLF = false;
 }
 
 Lexer::~Lexer(){
@@ -53,8 +60,10 @@ string Lexer::step(){
 			pos = 0;
 			nustring ++;
 			IsLF = true;
-		}else
+		}else{
+			twoLF = false;
 			IsLF = false;	
+		}
 		
 		if(c < 32) 
 			c = 32;//что за странные символы до 32 ascii?
@@ -82,8 +91,14 @@ string Lexer::step(){
 			if(c != 32)
 				a = a + (char)c;
 				
-			if(a.length() > 0 && !IsNum(c) && !IsLetter(c))
+			if(a.length() > 0 && !IsNum(c) && !IsLetter(c)){
+				int tmp = s[position];
+				if(a == "=" && tmp == '='){
+					a = a + (char)tmp;
+					position++;
+				}
 				return a;					
+			}
 		}else if(mode == LeComment){
 			position++;
 			pos++;
@@ -113,23 +128,6 @@ string Lexer::step(){
 		}
 	}
 	return a;
-}
-
-string Lexer::run(string s){
-	start(s);
-	string result;
-	while(position < length){	
-		int temppos = pos;
-		if(s[position] == 10 || s[position] == 13)//13
-			temppos = 0;
-		string lex = step();
-		result += lex + "\n";
-		Token token = GetTokentest(lex);
-		token.str = nustring;
-		token.pos = temppos;// - lex.length();
-		cout << token.type << "\t:type  " << token.lexeme << "\t :lexeme\t" <<  token.str << " :string\t" <<  token.pos << " :position" << endl;
-	}
-	return result;
 }
 
 bool Lexer::IsIdentif(string lexeme) {
@@ -185,7 +183,7 @@ LexType Lexer::getLexemeType(string lexeme) {
 		if(lexeme == "filum") return TyStringname;
 		if(lexeme == "QED") return TyReturn;
 		if(lexeme == "SPQR") return TyMain;
-		if(lexeme == "paritas") return TyEql;
+		if(lexeme == "==" || lexeme == "paritas") return TyEql;
 		if(IsIdentif(lexeme)) return TyIdentifier;
 		if(IsNumber(lexeme)) return TyNumber;
 		if(IsString(lexeme)) return TyString;
@@ -200,22 +198,32 @@ Token Lexer::GetTokentest(string lex){
 	return token;
 }
 
+string Lexer::run(string s){
+	start(s);
+	string result;
+	while(position < length){	
+		string lex = step();
+		result += lex + "\n";
+		Token token = GetTokentest(lex);
+		token.str = nustring;
+		token.pos = pos - lex.length();
+		cout << token.type << "\t:type  " << token.lexeme << "\t :lexeme\t" <<  token.str << " :string\t" <<  token.pos << " :position" << endl;
+	}
+	return result;
+}
 
 Token Lexer::GetToken(){
-	int temppos = pos;
-	if(s[position] == 10 || s[position] == 13)//13
-		temppos = 0;
-	string lex = step();
+	string lex = this->step();
 	Token token;
 	token.lexeme = lex;
 	token.type = getLexemeType(lex);
 	token.str = nustring;
-	token.pos = temppos;// - lex.length();
+	token.pos = this->pos - token.lexeme.length();
+//	cout << token.pos << "  pos  " << token.lexeme << "  lexeme " << "  string " << token.str << endl;
 	if(token.type == TyError){
-		cout << "error in string " << token.str << " position " << token.pos << endl;
+		cout << "error in string " << token.str << " position " << token.pos <<  "  " << token.lexeme <<endl;
+		exit(1);
 	}
 	return token;
 }
-
-
 
