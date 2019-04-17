@@ -22,13 +22,16 @@ int main() {
 	fin.open("aaf.txt");
 	if(!fin.is_open()) printf("g");
 	Lexer lexer;
+	Lexer lexer1;
 	Token token;
 	Parser parser(&lexer, &token);
 	string h;
 	getline (fin, h, '\0' );
 	//cout << h << endl << endl;
-//	h = lexer.run(h);
+	cout << "LEXER" << endl;
+	string f = lexer1.run(h);
 //	cout << h << endl;
+	cout << "PARSER" << endl;
 	node n = parser.Parun(h);
 	treeprint(&n, 0);
 	//system("pause");

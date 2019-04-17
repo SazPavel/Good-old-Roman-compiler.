@@ -54,7 +54,7 @@ class Lexer {
 		string s;
 		string numbers, letters, specials;
 		LexerMode mode;
-		bool IsLF, IsSlash, twoLF;
+		bool IsLF, IsSlash;
 };
 
 

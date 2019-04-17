@@ -16,7 +16,7 @@ Lexer::Lexer(){
 	specials = "(){};=+-*/";
 	mode = LeNormal;
 	length = position = nustring = pos = 0;
-	IsLF = IsSlash = twoLF = false;
+	IsLF = IsSlash = false;
 }
 
 Lexer::~Lexer(){
@@ -26,6 +26,8 @@ void Lexer::start(string s){
 	this->s = s;
 	length = s.length();
 	position = 0;
+	position = nustring = pos = 0;
+	IsLF = IsSlash = false;
 }
 
 bool Lexer::IsLetter(char a){
@@ -61,7 +63,6 @@ string Lexer::step(){
 			nustring ++;
 			IsLF = true;
 		}else{
-			twoLF = false;
 			IsLF = false;	
 		}
 		
