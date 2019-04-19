@@ -188,9 +188,8 @@ node* Parser::step(int flag){
 		n->lexeme = "";
 		*token = lexer->GetToken();			
 	}else if(token->type == TyLbra){
-		n->Type = 0;
-		n->lexeme = "";
-		*token = lexer->GetToken();			
+		*token = lexer->GetToken();		
+		n = step(0);	
 		while(token->type != TyRbra){
 			if(lexer->position >= lexer->length){
 				cout << "} expected" << " string " << token->str << " position " << token->pos << endl;

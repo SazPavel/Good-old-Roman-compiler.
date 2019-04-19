@@ -2,20 +2,19 @@
 #include "parser.cpp"
 
 using namespace std;
-
 void treeprint(node *tree, int n) {
   if (tree) {
-    //cout << tree->Type << "   " << tree->lexeme << endl;
-	//cout << "left      ";
-    treeprint(tree->son2, n + 5);
-	//cout << "right     ";
-	for(int i = 0; i< n; i++)
+	if(n > 1) cout << "|" ;
+	for(int i = 1; i < n; i++)
 		cout << " ";
-	cout << tree->lexeme << endl;	
-    treeprint(tree->son1, n + 5);
-    treeprint(tree->son3, n + 5);
+	if(n > 1) cout << "=> " ;
+	cout << tree->lexeme << endl;
+    treeprint(tree->son1, n + 3);	
+    treeprint(tree->son2, n + 3);
+    treeprint(tree->son3, n + 3);
   }
 }
+
 
 int main() {
 	ifstream fin;
