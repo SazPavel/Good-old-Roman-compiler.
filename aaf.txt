@@ -1,4 +1,5 @@
 SPQR{
+f = 1.2;
 si(f paritas 1.2)
     f = 1;
 }

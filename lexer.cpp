@@ -147,15 +147,16 @@ bool Lexer::IsIdentif(string lexeme) {
 bool Lexer::IsNumber(string lexeme) {
 	int len = lexeme.length();
 	if (len == 0) return false;
-	int f = 0;
+	int f = 0, j = 0;
 	for (int i = 0; i < len; i++) {
 		if (!isdigit(lexeme[i])){
 			if(lexeme[i] != '.' || f == 1) return false;	
 			else		
 				f = 1;
-		}
+		}else
+			j ++;
 	}
-	
+	if(j < 1) return false;	
 	return true;
 }
 
