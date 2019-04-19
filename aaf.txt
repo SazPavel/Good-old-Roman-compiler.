@@ -1,4 +1,4 @@
 SPQR{
-si(f < 1)
+si(f paritas 1.2)
     f = 1;
 }

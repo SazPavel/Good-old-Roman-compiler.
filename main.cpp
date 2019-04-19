@@ -20,7 +20,7 @@ void treeprint(node *tree, int n) {
 int main() {
 	ifstream fin;
 	fin.open("aaf.txt");
-	if(!fin.is_open()) printf("g");
+	if(!fin.is_open()) return -1;
 	Lexer lexer;
 	Lexer lexer1;
 	Token token;

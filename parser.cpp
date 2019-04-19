@@ -152,25 +152,25 @@ node* Parser::step(int flag){
 	node *n = new node;
 	if(token->type == TyIf){
 		n->Type = TyIf;
-		n->lexeme = "if";
+		n->lexeme = "si";
 		*token = lexer->GetToken();
 		n->son1 = par_exp(1);
 		n->son2 = step(0);
 		if(token->type == TyElse){
 			n->Type = TyElse;
-			n->lexeme = "else";
+			n->lexeme = "aliud";
 			*token = lexer->GetToken();
 			n->son3 = step(0);
 		}
 	}else if(token->type == TyWhile){
 		n->Type = TyWhile;
-		n->lexeme = "while";
+		n->lexeme = "dum";
 		*token = lexer->GetToken();
 		n->son1 = par_exp(1);		
 		n->son2 = step(0);
 	}else if(token->type == TyDo){
 		n->Type = TyDo;
-		n->lexeme = "do";
+		n->lexeme = "facite";
 		*token = lexer->GetToken();
 		n->son1 = step(0);
 		if(token->type != TyWhile){
@@ -224,7 +224,7 @@ node Parser::Parun(string s){
 	*token = lexer->GetToken();
 	if(token->type == 22){
 		node.Type = 22;
-		node.lexeme = "main";
+		node.lexeme = "SPQR";
 		*token = lexer->GetToken();
 		node.son1 = step(1);
 	}

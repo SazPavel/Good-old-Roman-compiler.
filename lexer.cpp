@@ -11,7 +11,7 @@ Token::~Token(){
 }
 
 Lexer::Lexer(){
-	numbers = "0123456789";
+	numbers = ".0123456789";
 	letters = "_ABCDEFGHIJKLMNOPQRSTUYWXYZabcdefghijklmnopqrstuvwxyz";
 	specials = "(){};=+-*/";
 	mode = LeNormal;
@@ -147,10 +147,15 @@ bool Lexer::IsIdentif(string lexeme) {
 bool Lexer::IsNumber(string lexeme) {
 	int len = lexeme.length();
 	if (len == 0) return false;
-
+	int f = 0;
 	for (int i = 0; i < len; i++) {
-		if (!IsNum(lexeme[i])) return false;
+		if (!isdigit(lexeme[i])){
+			if(lexeme[i] != '.' || f == 1) return false;	
+			else		
+				f = 1;
+		}
 	}
+	
 	return true;
 }
 
