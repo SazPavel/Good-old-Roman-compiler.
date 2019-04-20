@@ -26,10 +26,25 @@ Parser::~Parser(){
 
 node* Parser::term(){
 //	printf("term\n");
+//TODO
+  /*  if(token->type == TyInt){
+		node *n = new node;
+		n->Type = TyInt;
+		token_old = token->lexeme;
+		*token = lexer->GetToken();
+		if(token->type != TyIdentifier){
+			cout << "term expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
+			exit(-1);
+		}		
+		n->lexeme = token->lexeme;
+		*token = lexer->GetToken();
+		return n;   	
+    }*/
 	if(token->type == TyIdentifier){
 		node *n = new node;
 		n->Type = TyIdentifier;
 		n->lexeme = token->lexeme;
+		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		return n;
 	}
@@ -37,6 +52,7 @@ node* Parser::term(){
 		node *n = new node;
 		n->Type = TyNumber;
 		n->lexeme = token->lexeme;
+		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		return n;
 	}else{
@@ -54,6 +70,7 @@ node* Parser::summa(){
 		n->son1 = n1;		
 		n->Type = token->type;
 		n->lexeme = token->lexeme;
+		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		n->son2 = term();
 	}
@@ -70,10 +87,12 @@ node* Parser::test(){
 		n->son1 = n1;		
 		n->Type = token->type;	
 		n->lexeme = "<";
+		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		if(token->type == TyEqual){
 			n->Type = LessEq;
 			n->lexeme = "<=";
+			token_old = token->lexeme;
 			*token = lexer->GetToken();
 		}
 		n->son2 = summa();			
@@ -82,10 +101,12 @@ node* Parser::test(){
 		n->son1 = n1;		
 		n->Type = token->type;	
 		n->lexeme = ">";
+		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		if(token->type == TyEqual){
 			n->Type = OverEq;
 			n->lexeme = ">=";
+			token_old = token->lexeme;
 			*token = lexer->GetToken();
 		}
 		n->son2 = summa();					
@@ -94,6 +115,7 @@ node* Parser::test(){
 		n->son1 = n1;
 		n->Type = token->type;	
 		n->lexeme = "==";
+		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		n->son2 = summa();			
 	}
@@ -109,6 +131,7 @@ node* Parser::express(){
 	n = test();
 	if(n->Type == TyIdentifier && token->type == TyEqual){
 		node *n1 = new node;
+		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		cop(n1, n);
 		n->son1 = n1;		
@@ -124,21 +147,23 @@ node* Parser::par_exp(int t){
 	node *n = new node;
 	if(token->type != TyLpar){
 		if (t)
-			cout << "( expected" << " string " << token->str << " position " << token->pos << endl;
+			cout << "( expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 		else
-			cout << "term expected" << " string " << token->str << " position " << token->pos << endl;
+			cout << "term expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 		exit(-1);
 	}
+	token_old = token->lexeme;
 	*token = lexer->GetToken();
 	n = express();
 	if(token->type != TyRpar){
 		if(t)
-			cout << ") expected" << " string " << token->str << " position " << token->pos << endl;
+			cout << ") expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 		else
-			cout << "term expected" << " string " << token->str << " position " << token->pos << endl;
+			cout << "term expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 			
 		exit(-1);
 	}
+	token_old = token->lexeme;
 	*token = lexer->GetToken();
 	return n;	
 }
@@ -146,53 +171,62 @@ node* Parser::par_exp(int t){
 node* Parser::step(int flag){
 //	printf("step %d\n", token->type);
 	if(flag == 1 && token->type != TyLbra){
-		cout << "{ expected" << " string " << token->str << " position " << token->pos << endl;
+		cout << "{ expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 		exit(-1);
 	}
 	node *n = new node;
 	if(token->type == TyIf){
 		n->Type = TyIf;
 		n->lexeme = "si";
+		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		n->son1 = par_exp(1);
 		n->son2 = step(0);
 		if(token->type == TyElse){
 			n->Type = TyElse;
 			n->lexeme = "aliud";
+			token_old = token->lexeme;
 			*token = lexer->GetToken();
 			n->son3 = step(0);
 		}
 	}else if(token->type == TyWhile){
 		n->Type = TyWhile;
 		n->lexeme = "dum";
+		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		n->son1 = par_exp(1);		
 		n->son2 = step(0);
 	}else if(token->type == TyDo){
 		n->Type = TyDo;
 		n->lexeme = "facite";
+		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		n->son1 = step(0);
 		if(token->type != TyWhile){
-			cout << "while expected" << " string " << token->str << " position " << token->pos << endl;
+			cout << "dum expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 			exit(-1);
 		}
+		token_old = token->lexeme;
 		*token = lexer->GetToken();		
 		n->son2 = par_exp(1);
 		if(token->type != TySemicolon){
-			cout << "; expected" << " string " << token->str << " position " << token->pos << endl;
+			cout << "; expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 			exit(-1);
 		}
+		token_old = token->lexeme;
+		*token = lexer->GetToken();	
 	}else if(token->type == TySemicolon){
 		n->Type = 0;
-		n->lexeme = "";
+		n->lexeme = ";";
+		token_old = token->lexeme;
 		*token = lexer->GetToken();			
 	}else if(token->type == TyLbra){
+		token_old = token->lexeme;
 		*token = lexer->GetToken();		
 		n = step(0);	
 		while(token->type != TyRbra){
 			if(lexer->position >= lexer->length){
-				cout << "} expected" << " string " << token->str << " position " << token->pos << endl;
+				cout << "} expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 				exit(-1);
 			}
 			node *n1 = new node;
@@ -202,15 +236,17 @@ node* Parser::step(int flag){
 			n->Type = SEQ;
 			n->son2 = step(0);
 		}
+		token_old = token->lexeme;
 		*token = lexer->GetToken();			
 	}else{
 		n->Type = Expr;
 		n->lexeme = "expr";
 		n->son1 = express();	
 		if(token->type != TySemicolon){
-			cout << "; expected" << " string " << token->str << " position " << token->pos << endl;
+			cout << "; expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 			exit(-1);
 		}
+		token_old = token->lexeme;
 		*token = lexer->GetToken();
 	}		
 	return n;
@@ -220,18 +256,19 @@ node Parser::Parun(string s){
 	lexer->start(s);
 	node node;
 	lexer->nustring = 0;
+	token_old = token->lexeme;
 	*token = lexer->GetToken();
-	if(token->type == 22){
-		node.Type = 22;
+	if(token->type == TyMain){
+		node.Type = TyMain;
 		node.lexeme = "SPQR";
+		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		node.son1 = step(1);
 	}
 	if(token->type != TyEOF){
-		cout << "strange error  " << token->type << "    " << token->lexeme << endl;
+		cout << "Invalid statement syntax  " << token->type << "    " << token->lexeme << endl;
 		exit(-1);		
 	}
 	return node;	
 }
-
 

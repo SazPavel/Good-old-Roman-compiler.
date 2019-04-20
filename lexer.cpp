@@ -2,6 +2,39 @@
 
 using namespace std;
 
+string type_to_str(int type){
+	switch(type){
+		case TyError: return "error";
+		case TyIdentifier: return "identif";
+		case TyNumber: return "number";
+		case TyFloatNumber: return "floatnumber";
+		case TyString: return "string";
+		case TyLbra: return "LBRA";
+		case TyRbra: return "RBRA";
+		case TyEqual: return "equal";
+		case TyLpar: return "Lpar";
+		case TyRpar: return "Rpar";
+		case TyPlus: return "plus";
+		case TyMinus: return "minus";
+		case TyLess: return "less";
+		case TyOver: return "over";
+		case TyIf: return "if";
+		case TyElse: return "else";
+		case TyDo: return "do";
+		case TyWhile: return "while";
+		case TySemicolon: return ";";
+		case TyInt: return "int";
+		case TyFloat: return "float";
+		case TyStringname: return "stringname";
+		case TyReturn: return "return";
+		case TyMain: return "main";
+		case TySet: return "set";
+		case TyEql: return "eql";
+		case TyEOF: return "EOF";
+	}
+
+	return "wat";
+}
 
 Token::Token(){
 }
@@ -214,7 +247,7 @@ string Lexer::run(string s){
 		Token token = GetTokentest(lex);
 		token.str = nustring;
 		token.pos = pos - lex.length();
-		cout << token.type << "\t:type  " << token.lexeme << "\t :lexeme\t" <<  token.str << " :string\t" <<  token.pos << " :position" << endl;
+		cout << token.type << "\t:type  " << type_to_str(token.type) << "\t" << token.lexeme << "\t :lexeme\t" <<  token.str << " :string\t" <<  token.pos << " :position" << endl;
 	}
 	return result;
 }

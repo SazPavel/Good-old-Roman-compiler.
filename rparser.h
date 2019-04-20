@@ -26,6 +26,7 @@ class Parser {
 	
 	protected:
 		int glub;
+		string token_old;
 		Lexer *lexer;
 		Token *token;
 		

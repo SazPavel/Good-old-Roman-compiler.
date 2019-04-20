@@ -1,5 +1,10 @@
+#test
 SPQR{
-f = 1.2;
-si(f paritas 1.2)
-    f = 1;
+    ff == 1.2;
+    dum(f >= 1.2){    
+        f_f = 1;
+        facite{
+            g = 1;
+        }dum(g < 1);
+    }
 }
