@@ -16,7 +16,6 @@ void treeprint(node *tree, int n) {
   }
 }
 
-
 int main() {
 	ifstream fin;
 	fin.open("aaf.txt");
@@ -35,6 +34,14 @@ int main() {
 	cout << "---------PARSER---------" << endl;
 	node n = parser.Parun(h);
 	treeprint(&n, 0);
+	cout << "---------Table of id---------" << endl;
+	cout << "Type\tvalue\tlevel\tsublevel" << endl;
+	for(int i = 0; i < SIZEID; i++){
+		for(int j = 0; j < SIZEI; j++){
+			if(parser.id[i][j].Type != 0)
+				cout << parser.id[i][j].Type << "\t" << parser.id[i][j].value << "\t" << parser.id[i][j].level << "\t" << parser.id[i][j].sublevel << endl;
+		}
+	}
 	//system("pause");
 	return 0;
 }

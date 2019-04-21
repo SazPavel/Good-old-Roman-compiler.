@@ -19,7 +19,7 @@ class Token {
 		Token();
 		~Token();
 		string lexeme;
-		LexType type;
+		int type;
 		int str;
 		int pos;
 };

@@ -2,7 +2,19 @@
 
 #include "roman.h"
 
+#define SIZEID 50
+#define SIZEI 5
+
 using namespace std;
+
+struct identif{
+	int Type;
+	int BaseType;
+	int count;
+	string value;
+	int level;
+	int sublevel;
+};
 
 struct node{
 	int Type;
@@ -23,9 +35,12 @@ class Parser {
 		node* test();
 		node* summa();
 		node* term();
-	
+		int found_id(Token *token, node *n, int f);
+		
+    	hash <std::string> hash_fn;		
+		identif id[SIZEID][SIZEI] = {};
 	protected:
-		int glub;
+		int level, sublevel, levelflag;
 		string token_old;
 		Lexer *lexer;
 		Token *token;

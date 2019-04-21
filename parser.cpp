@@ -16,6 +16,49 @@ void cop(node *n1, node *n){
 	n->Type = 0;
 }
 
+
+int Parser::found_id(Token *token, node *n, int f){
+	int idn = (hash_fn(token->lexeme))%SIZEID;
+	if(id[idn][0].Type == 0){
+		if(f == 0){
+			return -1;
+		}else{		
+			id[idn][0].Type = token->type;
+			id[idn][0].BaseType = token->type;
+			id[idn][0].count = 1;
+			id[idn][0].value = token->lexeme;
+			id[idn][0].level = level;
+			id[idn][0].sublevel = sublevel;
+			return idn;
+		}	
+	}else{
+		for(int i = 0; i < SIZEI; i++){
+			if(f == 1){
+				if(id[idn][i].level == level && id[idn][i].sublevel == sublevel)
+					return -1;				
+				
+				if(id[idn][i].Type == 0){		
+					id[idn][i].Type = token->type;
+					id[idn][i].BaseType = token->type;
+					id[idn][i].count = 1;
+					id[idn][i].value = token->lexeme;
+					id[idn][i].level = level;
+					id[idn][i].sublevel = sublevel;
+					return idn;
+				}		
+			}else{
+				if(token->lexeme == id[idn][i].value){
+					n->lexeme = id[idn][i].value;
+					n->Type = id[idn][i].Type;
+					return idn;
+				}		
+			}	
+		}	
+		return -1;
+	}
+}
+
+
 Parser::Parser(Lexer *lexer, Token *token){
 	this->token = token;
 	this->lexer = lexer;
@@ -27,7 +70,7 @@ Parser::~Parser(){
 node* Parser::term(){
 //	printf("term\n");
 //TODO
-  /*  if(token->type == TyInt){
+    if(token->type == TyInt){
 		node *n = new node;
 		n->Type = TyInt;
 		token_old = token->lexeme;
@@ -35,15 +78,42 @@ node* Parser::term(){
 		if(token->type != TyIdentifier){
 			cout << "term expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 			exit(-1);
+		}	
+		token->type = n->Type;	
+    	if(found_id(token, n, 1) == -1){
+			cout << token->lexeme << " redeclaration of " << " string " << token->str << " position " << token->pos << " after " << token_old  << endl;
+			exit(-1);
 		}		
 		n->lexeme = token->lexeme;
 		*token = lexer->GetToken();
 		return n;   	
-    }*/
+    }
+    if(token->type == TyFloat){
+		node *n = new node;
+		n->Type = TyFloat;
+		token_old = token->lexeme;
+		*token = lexer->GetToken();
+		if(token->type != TyIdentifier){
+			cout << "term expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
+			exit(-1);
+		}		
+		token->type = n->Type;	
+    	if(found_id(token, n, 1) == -1){
+			cout << token->lexeme << " redeclaration of " << " string " << token->str << " position " << token->pos << " after " << token_old  << endl;
+			exit(-1);
+		}		
+		n->lexeme = token->lexeme;
+		*token = lexer->GetToken();
+		return n;   	
+    }
 	if(token->type == TyIdentifier){
 		node *n = new node;
-		n->Type = TyIdentifier;
-		n->lexeme = token->lexeme;
+		//n->Type = TyIdentifier;
+		//n->lexeme = token->lexeme;
+    	if(found_id(token, n, 0) == -1){
+			cout << token->lexeme << " was not declarated " << " string " << token->str << " position " << token->pos << " after " << token_old  << endl;
+			exit(-1);
+		}		
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		return n;
@@ -124,12 +194,12 @@ node* Parser::test(){
 
 node* Parser::express(){
 //	printf("exp\n");
-	if(token->type != TyIdentifier){
+	if(token->type != TyIdentifier && token->type != TyInt && token->type != TyFloat){
 		return test();
 	}
 	node *n = new node;
 	n = test();
-	if(n->Type == TyIdentifier && token->type == TyEqual){
+	if((n->Type == TyInt || n->Type == TyFloat ) && token->type == TyEqual){
 		node *n1 = new node;
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
@@ -221,6 +291,7 @@ node* Parser::step(int flag){
 		token_old = token->lexeme;
 		*token = lexer->GetToken();			
 	}else if(token->type == TyLbra){
+		level += 1;		
 		token_old = token->lexeme;
 		*token = lexer->GetToken();		
 		n = step(0);	
@@ -236,6 +307,8 @@ node* Parser::step(int flag){
 			n->Type = SEQ;
 			n->son2 = step(0);
 		}
+		level -= 1;
+		sublevel += 1;
 		token_old = token->lexeme;
 		*token = lexer->GetToken();			
 	}else{
@@ -258,6 +331,8 @@ node Parser::Parun(string s){
 	lexer->nustring = 0;
 	token_old = token->lexeme;
 	*token = lexer->GetToken();
+	level = 0;
+	sublevel = 0;
 	if(token->type == TyMain){
 		node.Type = TyMain;
 		node.lexeme = "SPQR";
