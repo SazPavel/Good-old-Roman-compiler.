@@ -1,10 +1,11 @@
 #test
 SPQR{
-    verum ff == 1.2;
+    verum ff = 1.9;
+    ff = ff + 3.2;
     dum(ff >= 1.2){    
-        totus f_f = 1;
+        totus f_f = 2;
         facite{
             totus g = 1;
-        }dum(f_f < 1);
+        }dum(f_f < 1.2);
     }
 }

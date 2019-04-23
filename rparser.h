@@ -18,6 +18,7 @@ struct identif{
 
 struct node{
 	int Type;
+	int type_num;
 	string lexeme;
 	node *son1 = NULL;
 	node *son2 = NULL;

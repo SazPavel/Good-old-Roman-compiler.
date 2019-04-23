@@ -9,6 +9,7 @@ void cop(node *n1, node *n){
 	n1->son2 = n->son2;
 	n1->son3 = n->son3;
 	n1->Type = n->Type;
+	n1->type_num = n->type_num;
 	n->lexeme = "";
 	n->son1 = NULL;
 	n->son2 = NULL;
@@ -49,7 +50,7 @@ int Parser::found_id(Token *token, node *n, int f){
 			}else{
 				if(token->lexeme == id[idn][i].value){
 					n->lexeme = id[idn][i].value;
-					n->Type = id[idn][i].Type;
+					n->type_num = n->Type = id[idn][i].Type;
 					return idn;
 				}		
 			}	
@@ -72,7 +73,7 @@ node* Parser::term(){
 //TODO
     if(token->type == TyInt){
 		node *n = new node;
-		n->Type = TyInt;
+		n->type_num = n->Type = TyInt;
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		if(token->type != TyIdentifier){
@@ -90,7 +91,7 @@ node* Parser::term(){
     }
     if(token->type == TyFloat){
 		node *n = new node;
-		n->Type = TyFloat;
+		n->type_num = n->Type = TyFloat;
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		if(token->type != TyIdentifier){
@@ -106,6 +107,24 @@ node* Parser::term(){
 		*token = lexer->GetToken();
 		return n;   	
     }
+    if(token->type ==TyStringname){
+    	node *n = new node;
+    	n->type_num = n->Type = TyStringname;
+    	token_old = token->lexeme;
+		*token = lexer->GetToken();
+		if(token->type != TyIdentifier){
+			cout << "term expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
+			exit(-1);
+		}
+		token->type = n->Type;
+		if(found_id(token, n, 1) == -1){
+			cout << token->lexeme << " redeclaration of " << " string " << token->str << " position " << token->pos << " after " << token_old  << endl;
+			exit(-1);
+		}
+		n->lexeme = token->lexeme;
+		*token = lexer->GetToken();
+		return n;
+	}
 	if(token->type == TyIdentifier){
 		node *n = new node;
 		//n->Type = TyIdentifier;
@@ -118,9 +137,25 @@ node* Parser::term(){
 		*token = lexer->GetToken();
 		return n;
 	}
-	if(token->type == TyNumber){
+	if(token->type == TyString){
 		node *n = new node;
-		n->Type = TyNumber;
+		n->type_num = n->Type = TyString;
+		n->lexeme = token->lexeme;
+		token_old = token->lexeme;
+		*token = lexer->GetToken();
+		return n;
+	}
+	if(token->type == TyNumberI){
+		node *n = new node;
+		n->type_num = n->Type = TyInt;
+		n->lexeme = token->lexeme;
+		token_old = token->lexeme;
+		*token = lexer->GetToken();
+		return n;
+	}
+	if(token->type == TyNumberF){
+		node *n = new node;
+		n->type_num = n->Type = TyFloat;
 		n->lexeme = token->lexeme;
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
@@ -143,6 +178,25 @@ node* Parser::summa(){
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		n->son2 = term();
+		if(n->son2->Type != n->type_num){
+			string flex;
+			switch(n->type_num){
+				case(TyInt):{
+					flex = "Int";
+					break;
+				}
+				case(TyFloat):{
+					flex = "Float";
+					break;
+				}
+				case(TyString):{
+					flex = "String";
+					break;
+				}
+			}
+			cout << "cannot convert " << n->son2->lexeme << " to " << flex << " string "<< token->str << " position " << token->pos << endl;
+			exit(-1);			
+		}
 	}
 	return n;
 }
@@ -152,7 +206,9 @@ node* Parser::test(){
 	node *n = new node;
 	n = summa();
 	node *n1 = new node;
+	int f = 0;
 	if(token->type == TyLess){
+		f = 1;
 		cop(n1, n);
 		n->son1 = n1;		
 		n->Type = token->type;	
@@ -167,6 +223,7 @@ node* Parser::test(){
 		}
 		n->son2 = summa();			
 	}else if(token->type == TyOver){
+		f = 1;
 		cop(n1, n);
 		n->son1 = n1;		
 		n->Type = token->type;	
@@ -181,6 +238,7 @@ node* Parser::test(){
 		}
 		n->son2 = summa();					
 	}else if(token->type == TyEql){
+		f = 1;
 		cop(n1, n);
 		n->son1 = n1;
 		n->Type = token->type;	
@@ -188,6 +246,25 @@ node* Parser::test(){
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		n->son2 = summa();			
+	}
+	if(f && n->son2->Type != n->type_num){
+		string flex;
+		switch(n->type_num){
+			case(TyInt):{
+				flex = "Int";
+				break;
+			}
+			case(TyFloat):{
+				flex = "Float";
+				break;
+			}
+			case(TyString):{
+				flex = "String";
+				break;
+			}
+		}
+		cout << "cannot convert " << n->son2->lexeme << " to " << flex <<  " string "<< token->str << " position " << token->pos << endl;
+		exit(-1);			
 	}
 	return n;
 }
@@ -199,7 +276,7 @@ node* Parser::express(){
 	}
 	node *n = new node;
 	n = test();
-	if((n->Type == TyInt || n->Type == TyFloat ) && token->type == TyEqual){
+	if((n->Type == TyInt || n->Type == TyFloat || n->Type == TyStringname) && token->type == TyEqual){
 		node *n1 = new node;
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
@@ -209,6 +286,26 @@ node* Parser::express(){
 		n->lexeme = "set";
 		n->son2 = express();
 	}	
+	if(n->son2->type_num != n->type_num){
+		string flex;
+		switch(n->type_num){
+			case(TyInt):{
+				flex = "Int";
+				break;
+			}
+			case(TyFloat):{
+				flex = "Float";
+				break;
+			}
+			case(TyString):{
+				flex = "String";
+				break;
+			}
+		}
+		//cout << n->son2->Type << endl;
+		cout << "cannot convert " << n->son2->lexeme << " to " << flex << " string "<< token->str << " position " << token->pos << endl;
+		exit(-1);			
+	}
 	return n;
 }
 	

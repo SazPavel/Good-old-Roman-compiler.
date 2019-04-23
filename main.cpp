@@ -9,14 +9,14 @@ void treeprint(node *tree, int n) {
 	for(int i = 1; i < n; i++)
 		cout << " ";
 	if(n > 1) cout << "=> " ;
-	cout << tree->lexeme << endl;
+	cout << tree->lexeme << "  " << tree->Type << "  " << tree->type_num << endl;
     treeprint(tree->son1, n + 3);	
     treeprint(tree->son2, n + 3);
     treeprint(tree->son3, n + 3);
   }
 }
 
-int main() {
+int main(){
 	ifstream fin;
 	fin.open("aaf.txt");
 	if(!fin.is_open()) return -1;

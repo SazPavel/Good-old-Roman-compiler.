@@ -6,7 +6,8 @@ string type_to_str(int type){
 	switch(type){
 		case TyError: return "error";
 		case TyIdentifier: return "identif";
-		case TyNumber: return "number";
+		case TyNumberI: return "num int";
+		case TyNumberF: return "num float";
 		case TyFloatNumber: return "floatnumber";
 		case TyString: return "string";
 		case TyLbra: return "LBRA";
@@ -176,8 +177,16 @@ bool Lexer::IsIdentif(string lexeme) {
 
 	return true;
 }
+bool Lexer::IsNumberI(string lexeme){
+	int len = lexeme.length();
+	if(len == 0) return false;
+	for(int i = 0; i < len; i++){
+		if(!isdigit(lexeme[i])) return false;
+	}
+	return true;
+}
 
-bool Lexer::IsNumber(string lexeme) {
+bool Lexer::IsNumberF(string lexeme){
 	int len = lexeme.length();
 	if (len == 0) return false;
 	int f = 0, j = 0;
@@ -225,7 +234,8 @@ LexType Lexer::getLexemeType(string lexeme) {
 		if(lexeme == "SPQR") return TyMain;
 		if(lexeme == "==" || lexeme == "paritas") return TyEql;
 		if(IsIdentif(lexeme)) return TyIdentifier;
-		if(IsNumber(lexeme)) return TyNumber;
+		if(IsNumberI(lexeme)) return TyNumberI;
+		if(IsNumberF(lexeme)) return TyNumberF;
 		if(IsString(lexeme)) return TyString;
 		if(lexeme == "\0") return TyEOF;
 		return TyError;
