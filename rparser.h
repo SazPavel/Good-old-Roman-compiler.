@@ -18,7 +18,7 @@ struct identif{
 
 struct node{
 	int Type;
-	int type_num;
+	int type_num = 0;
 	string lexeme;
 	node *son1 = NULL;
 	node *son2 = NULL;
@@ -36,7 +36,8 @@ class Parser {
 		node* test();
 		node* summa();
 		node* term();
-		int found_id(Token *token, node *n, int f);
+		int array(int flag, node *n, Token *token);
+		int found_id(Token *token, node *n, int f, int mas);
 		
     	hash <std::string> hash_fn;		
 		identif id[SIZEID][SIZEI] = {};

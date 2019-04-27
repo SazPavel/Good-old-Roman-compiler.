@@ -4,16 +4,16 @@
 using namespace std;
 
 void treeprint(node *tree, int n) {
-  if (tree) {
-	if(n > 1) cout << "|" ;
-	for(int i = 1; i < n; i++)
-		cout << " ";
-	if(n > 1) cout << "=> " ;
-	cout << tree->lexeme << "  " << tree->Type << "  " << tree->type_num << endl;
-    treeprint(tree->son1, n + 3);	
-    treeprint(tree->son2, n + 3);
-    treeprint(tree->son3, n + 3);
-  }
+    if (tree) {
+  		if(n > 1) cout << "|" ;
+  		for(int i = 1; i < n; i++)
+			cout << " ";
+		if(n > 1) cout << "=> " ;
+			cout << tree->lexeme << "  " << tree->Type << "  " << tree->type_num << endl;
+    	treeprint(tree->son1, n + 3);	
+    	treeprint(tree->son2, n + 3);
+    	treeprint(tree->son3, n + 3);
+    }
 }
 
 int main(){

@@ -8,7 +8,7 @@ string type_to_str(int type){
 		case TyIdentifier: return "identif";
 		case TyNumberI: return "num int";
 		case TyNumberF: return "num float";
-		case TyFloatNumber: return "floatnumber";
+		case TyMas: return "mas";
 		case TyString: return "string";
 		case TyLbra: return "LBRA";
 		case TyRbra: return "RBRA";
@@ -17,6 +17,8 @@ string type_to_str(int type){
 		case TyRpar: return "Rpar";
 		case TyPlus: return "plus";
 		case TyMinus: return "minus";
+		case TyMul: return "mul";
+		case TyDivision: return "division";
 		case TyLess: return "less";
 		case TyOver: return "over";
 		case TyIf: return "if";
@@ -107,6 +109,21 @@ string Lexer::step(){
 			if(a.length() > 0 && !IsNum(c) && !IsLetter(c)){
 				if(IsLF)
 					nustring --;
+				int tmp = s[position];
+			
+				if(tmp =='['){
+					a = a + (char)tmp;
+					position++;
+					while(IsNum(s[position])){
+						a = a + (char)s[position];
+						position++;
+					}
+					if(s[position] == ']'){
+						a = a + (char)s[position];
+						position++;
+					}
+				}
+
 				return a;
 			}
 			pos++;
@@ -165,6 +182,29 @@ string Lexer::step(){
 	return a;
 }
 
+bool Lexer::IsMas(string lexeme){
+	int len = lexeme.length();
+	if(len == 0) return false;	
+	int i;
+	for (i = 0; i < len; i++) {
+		if(!IsLetter(lexeme[i])){
+			if(lexeme[i] != '[') return false;
+			else{
+				i ++;
+				break;
+			}
+		}
+	}
+	for(; i< len; i++){
+		if(!isdigit(lexeme[i])){
+			if(lexeme[i] == ']') return true;
+			else
+				return false;
+		}	
+	}
+	return false;
+}
+
 bool Lexer::IsIdentif(string lexeme) {
 	int len = lexeme.length();
 	if (len == 0) return false;
@@ -218,8 +258,12 @@ LexType Lexer::getLexemeType(string lexeme) {
 		if(lexeme == "=") return TyEqual;
 		if(lexeme == "(") return TyLpar;
 		if(lexeme == ")") return TyRpar;
+//		if(lexeme == "[") return TySlpar;
+//		if(lexeme == "]") return TySrpar;
 		if(lexeme == "+") return TyPlus;
 		if(lexeme == "-") return TyMinus;
+		if(lexeme == "*") return TyMul;
+		if(lexeme == "/") return TyDivision;
 		if(lexeme == "<" || lexeme == "minor") return TyLess;
 		if(lexeme == ">" || lexeme == "major") return TyOver;
 		if(lexeme == ";") return TySemicolon;
@@ -237,6 +281,7 @@ LexType Lexer::getLexemeType(string lexeme) {
 		if(IsNumberI(lexeme)) return TyNumberI;
 		if(IsNumberF(lexeme)) return TyNumberF;
 		if(IsString(lexeme)) return TyString;
+		if(IsMas(lexeme)) return TyMas;
 		if(lexeme == "\0") return TyEOF;
 		return TyError;
 }

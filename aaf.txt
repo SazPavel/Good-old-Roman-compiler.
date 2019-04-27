@@ -1,11 +1,12 @@
 #test
 SPQR{
     verum ff = 1.9;
-    ff = ff + 3.2;
+    ff = ff / (3.2 + 1.0);
     dum(ff >= 1.2){    
         totus f_f = 2;
         facite{
-            totus g = 1;
-        }dum(f_f < 1.2);
+            filum ff = "k";
+        }dum(f_f < 8);
+	ff = 0.;
     }
 }
