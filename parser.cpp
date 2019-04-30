@@ -197,33 +197,68 @@ node* Parser::summa(){
 	n = term();
 	while(token->type == TyMinus || token->type == TyPlus || token->type == TyMul || token->type == TyDivision){
 		node *n1 = new node;
-		cop(n1, n);
-		n->son1 = n1;		
-		n->Type = token->type;
-		n->lexeme = token->lexeme;
-		token_old = token->lexeme;
-		*token = lexer->GetToken();
-		n->son2 = term();
-		if(n->son2->type_num != n->type_num){
-			string flex;
-			switch(n->type_num){
-				case(TyInt):{
-					flex = "Int";
-					break;
+		if(n->son2 == NULL || token->type == TyMinus || token->type == TyPlus){
+			cop(n1, n);
+			n->son1 = n1;
+			
+			n->Type = token->type;
+			n->lexeme = token->lexeme;
+			token_old = token->lexeme;
+			*token = lexer->GetToken();
+			n->son2 = term();
+			
+			if(n->son2->type_num != n->type_num){
+				string flex;
+				switch(n->type_num){
+					case(TyInt):{
+						flex = "Int";
+						break;
+					}
+					case(TyFloat):{
+						flex = "Float";
+						break;
+					}
+					case(TyString):{
+						flex = "String";
+						break;
+					}
 				}
-				case(TyFloat):{
-					flex = "Float";
-					break;
-				}
-				case(TyString):{
-					flex = "String";
-					break;
-				}
+				cout << "cannot convert " << n->son2->lexeme << " to " << flex << " string "<< token->str << " position " << token->pos << endl;
+				exit(-1);			
 			}
-			cout << "cannot convert " << n->son2->lexeme << " to " << flex << " string "<< token->str << " position " << token->pos << endl;
-			exit(-1);			
+		}else{
+			n1->son1 = n->son2;
+			n->son2 = n1;
+			n1->type_num = n1->son1->type_num;
+			n1->Type = token->type;
+			n1->lexeme = token->lexeme;
+			token_old = token->lexeme;
+			*token = lexer->GetToken();
+			n1->son2 = term();		
+			
+			if(n1->son2->type_num != n1->type_num){
+				string flex;
+				switch(n1->type_num){
+					case(TyInt):{
+						flex = "Int";
+						break;
+					}
+					case(TyFloat):{
+						flex = "Float";
+						break;
+					}
+					case(TyString):{
+						flex = "String";
+						break;
+					}
+				}
+				cout << "cannot convert " << n1->son2->lexeme << " to " << flex << " string "<< token->str << " position " << token->pos << endl;
+				exit(-1);			
+			}
+	
 		}
 	}
+	
 	return n;
 }
 
