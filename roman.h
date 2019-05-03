@@ -7,6 +7,7 @@
 #include <cctype>
 #include "rlexer.h"
 #include "rparser.h"
+#include "rass.h"
 
 /*                    | 
   ____________    __ -+-  ____________ 

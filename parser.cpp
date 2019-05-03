@@ -10,6 +10,8 @@ void cop(node *n1, node *n){
 	n1->son3 = n->son3;
 	n1->Type = n->Type;
 	n1->type_num = n->type_num;
+	n1->level = n->level;
+	n1->sublevel = n->sublevel;
 	n->lexeme = "";
 	n->son1 = NULL;
 	n->son2 = NULL;
@@ -20,11 +22,10 @@ void cop(node *n1, node *n){
 
 int Parser::found_id(Token *token, node *n, int f, int mas){
 	int idn = (hash_fn(token->lexeme))%SIZEID;
-	for(int i = 0; i < SIZEI; i++){
-		if(f == 1){
+	if(f == 1){			
+		for(int i = 0; i < SIZEI; i++){
 			if(id[idn][i].level == level && id[idn][i].sublevel == sublevel)
-				return -1;				
-				
+				return -1;	
 			if(id[idn][i].Type == 0){		
 				id[idn][i].Type = token->type;
 				id[idn][i].BaseType = token->type;
@@ -32,16 +33,22 @@ int Parser::found_id(Token *token, node *n, int f, int mas){
 				id[idn][i].value = token->lexeme;
 				id[idn][i].level = level;
 				id[idn][i].sublevel = sublevel;
+				n->level = id[idn][i].level;
+				n->sublevel = id[idn][i].sublevel;
 				return idn;
-			}		
-		}else{
-			if(token->lexeme == id[idn][i].value){
+			}
+		}
+	}else{
+		for(int i = SIZEI - 1; i >= 0; i--){
+			if(token->lexeme == id[idn][i].value && id[idn][i].level <= level){
 				n->lexeme = id[idn][i].value;
 				n->type_num = n->Type = id[idn][i].Type;
+				n->level = id[idn][i].level;
+				n->sublevel = id[idn][i].sublevel;
 				return idn;
 			}		
 		}	
-	}	
+	}
 	return -1;
 }
 
@@ -468,6 +475,18 @@ node* Parser::step(int flag){
 		sublevel += 1;
 		token_old = token->lexeme;
 		*token = lexer->GetToken();			
+	}else if(token->type == TyPrint){
+		n->Type = TyPrint;
+		n->lexeme = "print";
+		token_old = token->lexeme;
+		*token = lexer->GetToken();
+		n->son1 = term();	
+		if(token->type != TySemicolon){
+			cout << "; expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
+			exit(-1);
+		}
+		token_old = token->lexeme;
+		*token = lexer->GetToken();
 	}else{
 		n->Type = Expr;
 		n->lexeme = "expr";

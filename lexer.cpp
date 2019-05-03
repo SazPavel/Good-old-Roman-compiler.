@@ -25,6 +25,7 @@ string type_to_str(int type){
 		case TyElse: return "else";
 		case TyDo: return "do";
 		case TyWhile: return "while";
+		case TyPrint: return "print";
 		case TySemicolon: return ";";
 		case TyInt: return "int";
 		case TyFloat: return "float";
@@ -271,6 +272,7 @@ LexType Lexer::getLexemeType(string lexeme) {
 		if(lexeme == "aliud") return TyElse;
 		if(lexeme == "facite") return TyDo;
 		if(lexeme == "dum") return TyWhile;
+		if(lexeme == "eventus") return TyPrint;
 		if(lexeme == "totus") return TyInt;
 		if(lexeme == "verum") return TyFloat;
 		if(lexeme == "filum") return TyStringname;

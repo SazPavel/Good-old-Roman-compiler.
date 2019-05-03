@@ -1,5 +1,6 @@
 #include "lexer.cpp"
 #include "parser.cpp"
+#include "ass.cpp"
 
 using namespace std;
 
@@ -9,7 +10,7 @@ void treeprint(node *tree, int n) {
   		for(int i = 1; i < n; i++)
 			cout << " ";
 		if(n > 1) cout << "=> " ;
-			cout << tree->lexeme << "  " << tree->Type << "  " << tree->type_num << endl;
+			cout << tree->lexeme << "  " << tree->Type << "  " << tree->level << "  " << tree->sublevel << endl;
     	treeprint(tree->son1, n + 3);	
     	treeprint(tree->son2, n + 3);
     	treeprint(tree->son3, n + 3);
@@ -26,6 +27,7 @@ int main(){
 	Parser parser(&lexer, &token);
 	string h;
 	getline (fin, h, '\0' );
+    fin.close(); 
 	//cout << h << endl << endl;
 	//cout << h.max_size() << endl;
 	cout << "----------LEXER---------" << endl;
@@ -42,6 +44,15 @@ int main(){
 				cout << parser.id[i][j].Type << "\t" << parser.id[i][j].value << "\t" << parser.id[i][j].level << "\t" << parser.id[i][j].sublevel << endl;
 		}
 	}
+	ofstream fout;
+	Ass ass(&parser);
+	string asst = ass.runTable();
+	fout.open("aaf.S");
+	fout << asst; 
+	string assc = ass.runCode(&n);
+	assc += "\taddl  $8, %esp\n\tmovl  $0, %eax\n\tret\n";
+	fout << assc;
+    fout.close(); 
 	//system("pause");
 	return 0;
 }
