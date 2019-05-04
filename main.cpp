@@ -10,7 +10,7 @@ void treeprint(node *tree, int n) {
   		for(int i = 1; i < n; i++)
 			cout << " ";
 		if(n > 1) cout << "=> " ;
-			cout << tree->lexeme << "  " << tree->Type << "  " << tree->level << "  " << tree->sublevel << endl;
+			cout << tree->lexeme << "  " << tree->Type << "  " << tree->type_num  << endl;
     	treeprint(tree->son1, n + 3);	
     	treeprint(tree->son2, n + 3);
     	treeprint(tree->son3, n + 3);
@@ -50,7 +50,7 @@ int main(){
 	fout.open("aaf.S");
 	fout << asst; 
 	string assc = ass.runCode(&n);
-	assc += "\taddl  $8, %esp\n\tmovl  $0, %eax\n\tret\n";
+	assc += "\tleave\n\tret\n";
 	fout << assc;
     fout.close(); 
 	//system("pause");

@@ -1,5 +1,5 @@
 #test
 SPQR{
-    totus ff = 5;
+    verum ff = 6.0;
     eventus ff;
 }

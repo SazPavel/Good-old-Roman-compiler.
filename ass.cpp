@@ -9,13 +9,43 @@ Ass::Ass(Parser *parser){
 Ass::~Ass(){
 }
 
-string replaceDot(string& str){
-	int pos = str.find('.');
-	return str.replace(pos, 1, ",");
-}
+typedef union { 
+  
+    float f; 
+    struct
+    { 
+	    unsigned int mantissa : 23; 
+        unsigned int exponent : 8; 
+        unsigned int sign : 1; 
+  
+    } raw; 
+} myfloat; 
+   
+string printBinary(int n, int i) 
+{ 
+	string out = "";
+    int k; 
+    for (k = i - 1; k >= 0; k--) { 
+  
+        if ((n >> k) & 1) 
+            out += "1";
+        else
+            out += "0"; 
+    } 
+    return out;
+} 
 
+string printIEEE(myfloat var) 
+{ 
+    string out = "";
+    out += to_string(var.raw.sign);
+    out += printBinary(var.raw.exponent, 8); 
+    out += printBinary(var.raw.mantissa, 23); 
+    return out;
+} 
+  
 string Ass::runTable(){
-	string out = ".data\nprintf_format:\n\t.string \"%d\\n\"\n";
+	string out = ".section .data\nprinti_format:\n\t.string \"%d\\n\"\nprintf_format:\n\t.string \"%f\\n\"\n";
 	for(int i = 0; i < SIZEID; i++){
 		for(int j = 0; j < SIZEI; j++){
 			if(parser->id[i][j].Type != 0){
@@ -62,13 +92,15 @@ string Ass::findName(node *n){
 string Ass::runCode(node *n){
 	switch(n->Type){
 		case TyMain:{
-			out += ".globl _main\n.section .text  \n   .def	_main;	.scl	2;	.type	32;	.endef\n_main:\n";
+			out += ".globl _main\n.extern _printf\n.section .text  \n   .def	_main;	.scl	2;	.type	32;	.endef\n_main:\n";
 			runCode(n->son1);
 			break;
 		}
 		case TyNumberF:{
-			string name = replaceDot(n->lexeme);
-			out += "\tmov $";
+			myfloat var;
+			var.f = stof(n->lexeme);
+			string name = printIEEE(var);
+			out += "\tmov $0b";
 			out += name;
 			out += ", %eax";
 			out += "\n";
@@ -99,38 +131,57 @@ string Ass::runCode(node *n){
 		}
 		case TyPlus:{	
 			runCode(n->son2);
-			//from eax to edx
-			out += "\tmov %eax, %edx\n";
+			//from eax to ebx
+			out += "\tmov %eax, %ebx\n";
 			runCode(n->son1);
-			out += "\tadd %edx, %eax\n";
+			out += "\tadd %ebx, %eax\n";
 			break;
 		}
 		case TyMinus:{	
 			runCode(n->son2);
-			out += "\tmov %eax, %edx\n";
-			//from eax to edx
+			out += "\tmov %eax, %ebx\n";
+			//from eax to ebx
 			runCode(n->son1);
-			out += "\tsub %edx, %eax\n";
+			out += "\tsub %ebx, %eax\n";
 			break;
 		}
 		case TyMul:{
-			runCode(n->son1);	
-			//from eax to ?
 			runCode(n->son2);
+			out += "\tmov %eax, %ebx\n";	
+			//from eax to ebx
+			runCode(n->son1);
+			out += "\tmul %ebx\n";
 			//mul
 			break;
 		}
 		case TyDivision:{
-			runCode(n->son1);	
-			//from eax to ?
 			runCode(n->son2);
+			out += "\tmov %eax, %ecx\n";	
+			//from eax to ecx
+			runCode(n->son1);
+			out += "\tmov $0, %edx\n\tdiv %ecx\n";
 			//division
 			break;
 		}
 		case TyPrint:{
-			runCode(n->son1);
-			out += "\tpush %eax\n";      
-    		out += "\tpush $printf_format\n";
+			runCode(n->son1);      
+			switch(n->son1->type_num){
+				case(TyInt):{
+					out += "\tpush %eax\n";
+    				out += "\tpush $printi_format\n";
+					break;
+				}
+				case(TyFloat):{
+    				out += "\tpushl %ebp\n\tmovl %esp, %ebp\n";//т.к. превращается в double надо записать в стек еще одно число, которое будет перезаписано
+					out += "\tpush %eax\n";
+    				out += "\tflds (%esp)\n\tfstpl (%esp)\n\tpush $printf_format\n";
+					break;
+				}
+				case(TyString):{
+    				out += "\tpush $prints_format\n";
+					break;
+				}
+			}
 		  	out += "\tcall  _printf\n"; 			
 			break;
 		}
