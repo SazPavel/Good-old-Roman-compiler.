@@ -39,6 +39,40 @@ void cop(node *n1, node *n){
 	n->Type = 0;
 }
 
+int Parser::found_str_id(node *tree){
+	int idn = (hash_fn(tree->son1->lexeme))%SIZEID;
+	for(int i = SIZEI - 1; i >= 0; i--){
+		if(tree->son1->lexeme == id[idn][i].value && id[idn][i].level <= tree->son1->level){
+			id[idn][i].str = tree->son2->lexeme;
+			return idn;
+		}		
+	}
+	return -1;
+}
+
+void Parser::treeprint(node *tree, int n){
+    if (tree) {
+  		if(n > 1) cout << "|" ;
+  		for(int i = 1; i < n; i++)
+			cout << " ";
+		if(n > 1) cout << "=> " ;
+			cout << tree->lexeme << "  " << tree->Type << "  " << tree->type_num  << endl;
+    	treeprint(tree->son1, n + 3);	
+    	treeprint(tree->son2, n + 3);
+    	treeprint(tree->son3, n + 3);
+		if(tree->Type == TySet && tree->son1->Type == TyStringname && tree->son2->Type == TyString){
+			int s = found_str_id(tree);
+			if(s == -1){
+				cout << " Strange error " << endl;
+			}else{
+				tree->son1 = NULL;
+				tree->son2 = NULL;
+				tree->Type = 0;
+			}
+			
+		}
+    }
+}
 
 int Parser::found_id(Token *token, node *n, int f, int mas){
 	int idn = (hash_fn(token->lexeme))%SIZEID;

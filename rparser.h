@@ -12,6 +12,7 @@ struct identif{
 	int BaseType;
 	int count;
 	string value;
+	string str = "";
 	int level;
 	int sublevel;
 };
@@ -31,6 +32,7 @@ class Parser {
 	public:
 		Parser(Lexer *lexer, Token *token);
 		~Parser();
+		void treeprint(node *tree, int n);
 		node Parun(string str);
 		node* step(int flag);
 		node* express();	
@@ -46,6 +48,7 @@ class Parser {
 	protected:
 		int level, sublevel, levelflag;
 		string token_old;
+		int found_str_id(node *tree);
 		Lexer *lexer;
 		Token *token;
 		

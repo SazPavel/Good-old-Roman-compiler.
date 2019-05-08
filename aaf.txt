@@ -1,5 +1,5 @@
 #test
 SPQR{
-    verum ff = 6.0;
-    eventus ff;
+    filum f = "g";
+    eventus f;
 }

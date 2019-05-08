@@ -43,21 +43,19 @@ string printIEEE(myfloat var)
     out += printBinary(var.raw.mantissa, 23); 
     return out;
 } 
-
+  
 string Ass::runTable(){
-	string out = ".data\n.prints_format:\n\t.string \"%s\\n\"\n.printi_format:\n\t.string \"%d\\n\"\n.printf_format:\n\t.string \"%f\\n\"\n.float0:\n\t.long\n";
+	string out = ".section .data\nprinti_format:\n\t.string \"%d\\n\"\nprintf_format:\n\t.string \"%f\\n\"\n";
 	for(int i = 0; i < SIZEID; i++){
 		for(int j = 0; j < SIZEI; j++){
 			if(parser->id[i][j].Type != 0){
-				out += ".";
 				out +=  parser->id[i][j].value;
 				out +=  to_string(parser->id[i][j].level);
 				out +=  to_string(parser->id[i][j].sublevel);
 				out += ": \n\t";
 				switch(parser->id[i][j].Type){
 					case TyStringname:{
-						out += ".string ";
-						out += parser->id[i][j].str;
+						out += ".string";
 						break;
 					}
 					case TyInt:{
@@ -65,7 +63,7 @@ string Ass::runTable(){
 						break;
 					}
 					case TyFloat:{
-						out += ".long";
+						out += ".float";
 						break;
 					}
 				}
@@ -94,7 +92,7 @@ string Ass::findName(node *n){
 string Ass::runCode(node *n){
 	switch(n->Type){
 		case TyMain:{
-			out += "\n.text\n.globl main\n.def	main;	.scl	2;	.type	32;	.endef\nmain:\n";
+			out += ".globl _main\n.extern _printf\n.section .text  \n   .def	_main;	.scl	2;	.type	32;	.endef\n_main:\n";
 			runCode(n->son1);
 			break;
 		}
@@ -115,35 +113,20 @@ string Ass::runCode(node *n){
 			out += "\n";
 			break;
 		}
-		case TyString:{
-			out += "\tmov ";
-			out += n->lexeme;
-			out += ", %eax";
-			out += "\n";
-			break;
-		}
 		case TyInt:{
 			string name = findName(n);
 			out += "\tmov ";
-			out += ".";
+			out += "(";
 			out += name;
-			out += "(%rip), %eax\n";
+			out += "), %eax\n";
 			break;
 		}
 		case TyFloat:{
 			string name = findName(n);
 			out += "\tmov ";
-			out += ".";
+			out += "(";
 			out += name;
-			out += "(%rip), %eax\n";
-			break;
-		}
-		case TyStringname:{
-			string name = findName(n);
-			out += "\tmov ";
-			out += ".";
-			out += name;
-			out += "(%rip), %eax\n";
+			out += "), %eax\n";
 			break;
 		}
 		case TyPlus:{	
@@ -184,30 +167,22 @@ string Ass::runCode(node *n){
 			runCode(n->son1);      
 			switch(n->son1->type_num){
 				case(TyInt):{
-					out += "\tsubq\t$32, %rsp\n\tmovq\t%rsp, %rbp\n\tpushq\t%rbp\n\tmov\t%eax, %edx\n\tlea\t.printi_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$32, %rsp\n\tpopq\t%rbp\n";
+					out += "\tpush %eax\n";
+    				out += "\tpush $printi_format\n";
 					break;
 				}
 				case(TyFloat):{
-					out += "\tsubq\t$64, %rsp\n\tmovq\t%rsp, %rbp\n\tpushq\t%rbp\n";
-					if(n->son1->Type == TyFloat){
-						string name = findName(n->son1);
-						out += "\tmovss\t.";
-						out += name;
-						out += "(%rip), %xmm0\n";
-					}else{
-						out += "\tmov\t%eax, .float0(%rip)\n\tmovss\t.float0(%rip), %xmm0\n";
-					}
-    				out += "\tmovss\t%xmm0, -4(%rbp)\n\tcvtss2sd\t-4(%rbp), %xmm0\n\tmovq\t%xmm0, %rax\n\tmovq\t%rax, %rdx\n\tmovq\t%rdx, -24(%rbp)\n\tmovsd\t-24(%rbp), %xmm0\n\tmovapd\t%xmm0, %xmm1\n\tmovq\t%rax, %rdx\n\tlea\t.printf_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$64, %rsp\n\tpopq\t%rbp\n";		
+    				out += "\tpushl %ebp\n\tmovl %esp, %ebp\n";//т.к. превращается в double надо записать в стек еще одно число, которое будет перезаписано
+					out += "\tpush %eax\n";
+    				out += "\tflds (%esp)\n\tfstpl (%esp)\n\tpush $printf_format\n";
 					break;
 				}
-				case(TyStringname):{
-					string name = findName(n->son1);
-    				out += "\tsubq\t$48, %rsp\n\tmovq\t%rsp, %rbp\n\tpushq\t%rbp\n\tleaq\t.";
-    				out += 	name;
-					out += "(%rip), %rdx\n\tleaq\t.prints_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$48, %rsp\n\tpopq\t%rbp\n\tret\n";
+				case(TyString):{
+    				out += "\tpush $prints_format\n";
 					break;
 				}
-			}		
+			}
+		  	out += "\tcall  _printf\n"; 			
 			break;
 		}
 		case SEQ:{
@@ -224,9 +199,9 @@ string Ass::runCode(node *n){
 			runCode(n->son2);	
 			//eax		
 			string name = findName(n->son1);
-			out += "\tmov %eax, .";
+			out += "\tmov %eax, (";
 			out += name;
-			out += "(%rip)\n";
+			out += ")\n";
 			break;
 		}
 	}
