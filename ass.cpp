@@ -4,6 +4,7 @@ using namespace std;
 
 Ass::Ass(Parser *parser){
 	this->parser = parser;
+	num_loop = 0;
 }
 
 Ass::~Ass(){
@@ -148,26 +149,26 @@ string Ass::runCode(node *n){
 		}
 		case TyPlus:{	
 			runCode(n->son2);
-			//from eax to ebx
-			out += "\tmov %eax, %ebx\n";
+			//from eax to ecx
+			out += "\tmov %eax, %ecx\n";
 			runCode(n->son1);
-			out += "\tadd %ebx, %eax\n";
+			out += "\tadd %ecx, %eax\n";
 			break;
 		}
 		case TyMinus:{	
 			runCode(n->son2);
-			out += "\tmov %eax, %ebx\n";
-			//from eax to ebx
+			out += "\tmov %eax, %ecx\n";
+			//from eax to ecx
 			runCode(n->son1);
-			out += "\tsub %ebx, %eax\n";
+			out += "\tsub %ecx, %eax\n";
 			break;
 		}
 		case TyMul:{
 			runCode(n->son2);
-			out += "\tmov %eax, %ebx\n";	
-			//from eax to ebx
+			out += "\tmov %eax, %ecx\n";	
+			//from eax to ecx
 			runCode(n->son1);
-			out += "\tmul %ebx\n";
+			out += "\tmul %ecx\n";
 			//mul
 			break;
 		}
@@ -208,6 +209,42 @@ string Ass::runCode(node *n){
 					break;
 				}
 			}		
+			break;
+		}
+		case TyLess:{
+			runCode(n->son2);
+			out += "\tmov %eax, %ecx\n";
+			runCode(n->son1);
+			out += "\tcmp %ecx, %eax\n\tjl";
+			//division
+			break;
+		}
+		case TyOver:{
+			runCode(n->son2);
+			out += "\tmov %eax, %ecx\n";
+			runCode(n->son1);
+			out += "\tcmp %ecx, %eax\n\tjg";
+			//division
+			break;
+		}
+		case TyEql:{
+			runCode(n->son2);
+			out += "\tmov %eax, %ecx\n";
+			runCode(n->son1);
+			out += "\tcmp %ecx, %eax\n\tje";
+			//division
+			break;
+		}
+		case TyDo:{
+			out += "DO";
+			out += to_string(num_loop);	
+			out += ":\n";
+			runCode(n->son1);
+			runCode(n->son2);
+			out += " DO";
+			out += to_string(num_loop);
+			out += "\n";
+			num_loop += 1;
 			break;
 		}
 		case SEQ:{

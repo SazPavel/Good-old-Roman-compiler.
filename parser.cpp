@@ -242,7 +242,6 @@ node* Parser::term(){
 		return n;
 	}
 	return par_exp(0);
-	
 }
 
 node* Parser::summa(){
@@ -305,7 +304,7 @@ node* Parser::summa(){
 			*token = lexer->GetToken();
 			n1->son2 = term();		
 			if(n->type_num == TyString){
-				cout << "error string arithemetics" << " string "<< token->str << " position " << token->pos << endl;
+				cout << "error string arithemetics" << " string "<< token->str << " position " << token->pos << " after " << token_old  << endl;
 				exit(-1);
 			}
 			
@@ -343,7 +342,6 @@ node* Parser::summa(){
 	
 		}
 	}
-	
 	return n;
 }
 
@@ -431,6 +429,10 @@ node* Parser::express(){
 		n->Type = TySet;	
 		n->lexeme = "set";
 		n->son2 = express();
+	}
+	if(n->son2 == NULL){
+		cout << "something is missing " << " string "<< token->str << " position " << token->pos << " after " << token_old << endl;
+		exit(-1);			
 	}	
 	if(n->son2->type_num != n->type_num){
 		string flex;

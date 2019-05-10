@@ -13,6 +13,7 @@ class Ass {
 		string runCode(node *n);
 		string findName(node *n);
 	protected:
+		int num_loop;
 		string out = "\n";
 		Parser *parser;
 };

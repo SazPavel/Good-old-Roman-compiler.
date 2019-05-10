@@ -1,5 +1,8 @@
 #test
 SPQR{
-    filum f = "g";
-    eventus f;
+    totus i = 6;
+    facite{
+	i = i - 1;
+    }dum (i < 1);
+    eventus i;
 }
