@@ -10,7 +10,7 @@ class Ass {
 		~Ass();
 		
 		string runTable();
-		string runCode(node *n);
+		string runCode(node *n, int flag = 0);
 		string findName(node *n);
 	protected:
 		int num_loop;

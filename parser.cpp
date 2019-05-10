@@ -47,6 +47,21 @@ int Parser::found_str_id(node *tree){
 			return idn;
 		}		
 	}
+	for(int i = 0; i < SIZEI; i++){
+		if(id[idn][i].Type == 0){
+			id[idn][i].Type = TyString;
+			id[idn][i].BaseType = TyString;
+			id[idn][i].str = tree->son1->lexeme.substr(0, tree->son1->lexeme.size());
+			string tmp = tree->son1->lexeme.substr(1, tree->son1->lexeme.size()-2);
+			for (int i = 0; i < tmp.length(); i++){
+				if(tmp.at(i) == '\\'){
+					tmp.at(i) = 's';
+				}
+			}				
+			id[idn][i].value = tmp;
+			return idn;
+		}
+	}
 	return -1;
 }
 
@@ -60,14 +75,16 @@ void Parser::treeprint(node *tree, int n){
     	treeprint(tree->son1, n + 3);	
     	treeprint(tree->son2, n + 3);
     	treeprint(tree->son3, n + 3);
-		if(tree->Type == TySet && tree->son1->Type == TyStringname && tree->son2->Type == TyString){
+		if((tree->Type == TySet && tree->son1->Type == TyStringname && tree->son2->Type == TyString) || (tree->Type == TyPrint && tree->son1->Type == TyString)){
 			int s = found_str_id(tree);
 			if(s == -1){
 				cout << " Strange error " << endl;
 			}else{
-				tree->son1 = NULL;
-				tree->son2 = NULL;
-				tree->Type = 0;
+				if(tree->Type == TySet){
+					tree->son1 = NULL;
+					tree->son2 = NULL;
+					tree->Type = 0;
+				}
 			}
 			
 		}
@@ -205,7 +222,7 @@ node* Parser::term(){
 	}
 	if(token->type == TyString){
 		node *n = new node;
-		n->type_num = TyStringname;
+		n->type_num = TyString;
 		n->Type = TyString;
 		n->lexeme = token->lexeme;
 		token_old = token->lexeme;
