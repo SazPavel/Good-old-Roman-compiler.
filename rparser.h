@@ -12,7 +12,7 @@ struct identif{
 	int BaseType;
 	int count;
 	string value;
-	string str = "";
+	string str = " ";
 	int level;
 	int sublevel;
 };

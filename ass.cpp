@@ -69,7 +69,7 @@ string Ass::runTable(){
 			}
 		}
 	}	
-	out += "\n.prints_format:\n\t.string \"%s\\n\"\n.printi_format:\n\t.string \"%d\\n\"\n.printf_format:\n\t.string \"%f\\n\"\n";
+	out += "\n.prints_format:\n\t.string \"%s\\0\"\n.printi_format:\n\t.string \"%d\\0\"\n.printf_format:\n\t.string \"%f\\0\"\n";
 	
 	for(int i = 0; i < SIZEID; i++){
 		for(int j = 0; j < SIZEI; j++){
@@ -78,8 +78,9 @@ string Ass::runTable(){
 				out +=  parser->id[i][j].value;
 				out +=  to_string(parser->id[i][j].level);
 				out +=  to_string(parser->id[i][j].sublevel);
-				out += ": \n\t.string ";
+				out += ": \n\t.string";
 				out += parser->id[i][j].str;
+				out += "\n";
 			}
 		}
 	}
@@ -112,14 +113,14 @@ string Ass::runCode(node *n, int flag){
 			myfloat var;
 			var.f = stof(n->lexeme);
 			string name = printIEEE(var);
-			out += "\tmov $0b";
+			out += "\tmov\t$0b";
 			out += name;
 			out += ", %eax";
 			out += "\n";
 			break;
 		}
 		case TyNumberI:{
-			out += "\tmov $";
+			out += "\tmov\t$";
 			out += n->lexeme;
 			out += ", %eax";
 			out += "\n";
@@ -134,7 +135,7 @@ string Ass::runCode(node *n, int flag){
 		}*/
 		case TyInt:{
 			string name = findName(n);
-			out += "\tmov ";
+			out += "\tmov\t";
 			out += ".";
 			out += name;
 			out += "(%rip), %eax\n";
@@ -142,7 +143,7 @@ string Ass::runCode(node *n, int flag){
 		}
 		case TyFloat:{
 			string name = findName(n);
-			out += "\tmov ";
+			out += "\tmov\t";
 			out += ".";
 			out += name;
 			out += "(%rip), %eax\n";
@@ -150,7 +151,7 @@ string Ass::runCode(node *n, int flag){
 		}
 		case TyStringname:{
 			string name = findName(n);
-			out += "\tmov ";
+			out += "\tmov\t";
 			out += ".";
 			out += name;
 			out += "(%rip), %eax\n";
@@ -231,32 +232,32 @@ string Ass::runCode(node *n, int flag){
 		}
 		case TyLess:{
 			runCode(n->son2);
-			out += "\tmov %eax, %ecx\n";
+			out += "\tmov\t%eax, %ecx\n";
 			runCode(n->son1);
 			if(flag == 0)
-				out += "\tcmp %ecx, %eax\n\tjl";
+				out += "\tcmp\t%ecx, %eax\n\tjl";
 			else
-				out += "\tcmp %ecx, %eax\n\tjnl";
+				out += "\tcmp\t%ecx, %eax\n\tjnl";
 			break;
 		}
 		case TyOver:{
 			runCode(n->son2);
-			out += "\tmov %eax, %ecx\n";
+			out += "\tmov\t%eax, %ecx\n";
 			runCode(n->son1);
 			if(flag == 0)
-				out += "\tcmp %ecx, %eax\n\tjg";
+				out += "\tcmp\t%ecx, %eax\n\tjg";
 			else
-				out += "\tcmp %ecx, %eax\n\tjng";
+				out += "\tcmp\t%ecx, %eax\n\tjng";
 			break;
 		}
 		case TyEql:{
 			runCode(n->son1);
-			out += "\tmov %eax, %ecx\n";
+			out += "\tmov\t%eax, %ecx\n";
 			runCode(n->son2);
 			if(flag == 0)
-				out += "\tcmp %ecx, %eax\n\tje";
+				out += "\tcmp\t%ecx, %eax\n\tje";
 			else
-				out += "\tcmp %ecx, %eax\n\tjne";
+				out += "\tcmp\t%ecx, %eax\n\tjne";
 			break;
 		}
 		case TyDo:{
@@ -280,10 +281,41 @@ string Ass::runCode(node *n, int flag){
 			out += to_string(num_loop);
 			out += "\n";
 			runCode(n->son2);
-			out += "\tjmp WHILE";
+			out += "\tjmp\tWHILE";
 			out += to_string(num_loop);	
 			out += "\n";
 			out += "DO";
+			out += to_string(num_loop);	
+			out += ":\n";
+			num_loop += 1;
+			break;
+		}
+		case TyIf:{
+			runCode(n->son1, 1);
+			out += " IF";
+			out += to_string(num_loop);	
+			out += "\n";
+			runCode(n->son2);			
+			out += "IF";
+			out += to_string(num_loop);	
+			out += ":\n";
+			num_loop += 1;
+			break;
+		}
+		case TyElse:{
+			runCode(n->son1, 1);
+			out += " ELSE";
+			out += to_string(num_loop);	
+			out += "\n";
+			runCode(n->son2);
+			out += "\tjmp\tIF";	
+			out += to_string(num_loop);	
+			out += "\n";	
+			out += "ELSE";
+			out += to_string(num_loop);	
+			out += ":\n";
+			runCode(n->son3);		
+			out += "IF";
 			out += to_string(num_loop);	
 			out += ":\n";
 			num_loop += 1;

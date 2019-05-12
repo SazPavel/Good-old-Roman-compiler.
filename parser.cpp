@@ -42,8 +42,8 @@ void cop(node *n1, node *n){
 int Parser::found_str_id(node *tree){
 	int idn = (hash_fn(tree->son1->lexeme))%SIZEID;
 	for(int i = SIZEI - 1; i >= 0; i--){
-		if(tree->son1->lexeme == id[idn][i].value && id[idn][i].level <= tree->son1->level){
-			id[idn][i].str = tree->son2->lexeme;
+		if((tree->son1->lexeme == id[idn][i].value || tree->son1->lexeme == id[idn][i].str) && id[idn][i].level <= tree->son1->level){
+			cout << tree->son1->lexeme << "   " << id[idn][i].value << endl;
 			return idn;
 		}		
 	}
