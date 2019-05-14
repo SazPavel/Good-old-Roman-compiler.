@@ -11,7 +11,7 @@ using namespace std;
 // 'si': IF, 'aliud': ELSE, 'facite': DO, 'dum': WHILE, 'totus': INT, 'verum': FLOAT 'QED': return 'SPQR': main, 'filum': string, 'paritas': equal, 'eventus': print
 
 
-enum LexType { TyError, TyIdentifier, TyNumberF, TyNumberI, TyMas, TyString, TyLbra, TyRbra, TyEqual, TyLpar, TyRpar, TyPlus, TyMinus, TyMul, TyDivision, TyLess, TyOver, TyIf, TyElse, TyDo, TyWhile, TySemicolon, TyInt, TyFloat, TyStringname, TyPrint, TyReturn, TyMain, TySet, TyEql, TyEOF, Expr, SEQ, LessEq, OverEq};
+enum LexType { TyError, TyIdentifier, TyNumberF, TyNumberI, TyMas, TyString, TyLbra, TyRbra, TyEqual, TyLpar, TyRpar, TyPlus, TyMinus, TyMul, TyDivision, TyLess, TyOver, TyIf, TyElse, TyDo, TyWhile, TySemicolon, TyInt, TyFloat, TyStringname, TyPrint, TyReturn, TyMain, TySet, TyEql, TyEOF, Expr, SEQ, LessEq, OverEq, TyMasI, TyMasF};
 	
 enum LexerMode { LeNormal, LeString, LeComment };
 class Token {

@@ -15,6 +15,8 @@ struct identif{
 	string str = " ";
 	int level;
 	int sublevel;
+	float *masf;
+	int *masi;
 };
 
 struct node{
@@ -22,11 +24,13 @@ struct node{
 	int type_num = 0;
 	int level = 0;
 	int sublevel = 0;
+	int count = 0;
 	string lexeme;
 	node *son1 = NULL;
 	node *son2 = NULL;
 	node *son3 = NULL;
 };
+
 
 class Parser {
 	public:

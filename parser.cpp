@@ -6,8 +6,7 @@ using namespace std;
 string mastoi(string str, int *count){
 	int found = str.find("[");
 	int found2 = str.find("]");
-	string counts = str.substr(found+1, found2-3);
-	
+	string counts = str.substr(found+1, found2-2);
 	*count = stoi(counts);
 	str = str.substr(0, found);
 	return str;
@@ -29,10 +28,12 @@ void cop(node *n1, node *n){
 	n1->son2 = n->son2;
 	n1->son3 = n->son3;
 	n1->Type = n->Type;
+	n1->count = n->count;
 	n1->type_num = n->type_num;
 	n1->level = n->level;
 	n1->sublevel = n->sublevel;
 	n->lexeme = "";
+	n->count = 0;
 	n->son1 = NULL;
 	n->son2 = NULL;
 	n->son3 = NULL;
@@ -53,7 +54,7 @@ int Parser::found_str_id(node *tree){
 			id[idn][i].BaseType = TyString;
 			id[idn][i].str = tree->son1->lexeme.substr(0, tree->son1->lexeme.size());
 			string tmp = tree->son1->lexeme.substr(1, tree->son1->lexeme.size()-2);
-			for (int i = 0; i < tmp.length(); i++){
+			for (unsigned int i = 0; i < tmp.length(); i++){
 				if(tmp.at(i) == '\\'){
 					tmp.at(i) = 's';
 				}
@@ -67,6 +68,8 @@ int Parser::found_str_id(node *tree){
 
 void Parser::treeprint(node *tree, int n){
     if (tree) {
+    	if(tree->Type == Expr && (tree->son1->Type == TyMasI || tree->son1->Type == TyMasF) && tree->son1->son1 == NULL)
+    		tree->son1->Type = 0;
   		if(n > 1) cout << "|" ;
   		for(int i = 1; i < n; i++)
 			cout << " ";
@@ -95,25 +98,89 @@ int Parser::found_id(Token *token, node *n, int f, int mas){
 	int idn = (hash_fn(token->lexeme))%SIZEID;
 	if(f){			
 		for(int i = 0; i < SIZEI; i++){
+			
 			if(id[idn][i].level == level && id[idn][i].sublevel == sublevel)
 				return -1;	
 			if(id[idn][i].Type == 0){
 				id[idn][i].Type = token->type;
+				id[idn][i].count = 1;				
 				id[idn][i].BaseType = token->type;
-				id[idn][i].count = 1;
 				id[idn][i].value = token->lexeme;
 				id[idn][i].level = level;
 				id[idn][i].sublevel = sublevel;
 				n->level = id[idn][i].level;
 				n->sublevel = id[idn][i].sublevel;
+				if(mas){
+					if(id[idn][i].Type == TyInt){
+						id[idn][i].Type = TyMasI;
+						id[idn][i].masi = new int[mas];
+						id[idn][i].count = mas;
+						token_old = token->lexeme;
+						*token = lexer->GetToken();
+						if(token->lexeme != "="){
+							cout << "need inicialization" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
+							exit(-1);
+						}
+						for(int j = 0; j < mas; j++){
+							token_old = token->lexeme;
+							*token = lexer->GetToken();
+							if(token->type != TyNumberI){
+								cout << "need integer" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
+								exit(-1);
+							}
+							id[idn][i].masi[j] = stoi(token->lexeme);
+						}
+						token_old = token->lexeme;
+						*token = lexer->GetToken();
+				/*		for(int j = 0; j < mas; j++)
+							cout << id[idn][i].masi[j] << " ";
+						cout << endl;*/
+					}
+					if(id[idn][i].Type == TyFloat){
+						if(id[idn][i].Type == TyFloat){
+						id[idn][i].Type = TyMasF;
+						id[idn][i].masf = new float[mas];
+						id[idn][i].count = mas;
+						token_old = token->lexeme;
+						*token = lexer->GetToken();
+						if(token->lexeme != "="){
+							cout << "need inicialization" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
+							exit(-1);
+						}
+						for(int j = 0; j < mas; j++){
+							token_old = token->lexeme;
+							*token = lexer->GetToken();
+							if(token->type != TyNumberF){
+								cout << "need float" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
+								exit(-1);
+							}
+							id[idn][i].masf[j] = stof(token->lexeme);
+						}
+						token_old = token->lexeme;
+						*token = lexer->GetToken();
+				/*		for(int j = 0; j < mas; j++)
+							cout << id[idn][i].masf[j] << " ";
+						cout << endl;*/
+					}
+					}
+				}
+				
 				return idn;
 			}
 		}
 	}else{
 		for(int i = SIZEI - 1; i >= 0; i--){
 			if(token->lexeme == id[idn][i].value && id[idn][i].level <= level){
+				if(mas > id[idn][i].count){
+					cout << "overlimited mass" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
+					exit(-1);
+				}
+				if(mas){
+					n->count = mas;
+				}
 				n->lexeme = id[idn][i].value;
-				n->type_num = n->Type = id[idn][i].Type;
+				n->Type = id[idn][i].Type;
+				n->type_num  = id[idn][i].BaseType;
 				n->level = id[idn][i].level;
 				n->sublevel = id[idn][i].sublevel;
 				return idn;
@@ -139,28 +206,27 @@ node* Parser::term(){
 		node *n = new node;
 		n->type_num = n->Type = TyInt;
 		token_old = token->lexeme;
-		*token = lexer->GetToken();
+		*token = lexer->GetToken();	
+		int mas = 0;
 		if(token->type != TyIdentifier){
 			if(token->type == TyMas){
-				token->type = n->Type;	
-				int mas;
 				token->lexeme = mastoi(token->lexeme, &mas);
-    			if(found_id(token, n, 1, 1) == -1){
-					cout << token->lexeme << " redeclaration" << " string " << token->str << " position " << token->pos << " after " << token_old  << endl;
-					exit(-1);
-				}
 			}else{
 				cout << "term expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 				exit(-1);
 			}
 		}
 		token->type = n->Type;	
-    	if(found_id(token, n, 1, 0) == -1){
+    	if(found_id(token, n, 1, mas) == -1){
 			cout << token->lexeme << " redeclaration of " << " string " << token->str << " position " << token->pos << " after " << token_old  << endl;
 			exit(-1);
 		}		
-		n->lexeme = token->lexeme;
-		*token = lexer->GetToken();
+		if(mas){
+			n->Type = TyMasI;	
+		}else{
+			n->lexeme = token->lexeme;
+			*token = lexer->GetToken();
+		}
 		return n;   	
     }
     if(token->type == TyFloat){
@@ -168,26 +234,26 @@ node* Parser::term(){
 		n->type_num = n->Type = TyFloat;
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
+		int mas = 0;
 		if(token->type != TyIdentifier){
 			if(token->type == TyMas){
-				token->type = n->Type;	
-				
-    			if(found_id(token, n, 1, 1) == -1){
-					cout << token->lexeme << " redeclaration" << " string " << token->str << " position " << token->pos << " after " << token_old  << endl;
-					exit(-1);
-				}
+				token->lexeme = mastoi(token->lexeme, &mas);
 			}else{
 				cout << "term expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 				exit(-1);
 			}
 		}		
 		token->type = n->Type;	
-    	if(found_id(token, n, 1, 0) == -1){
+    	if(found_id(token, n, 1, mas) == -1){
 			cout << token->lexeme << " redeclaration of " << " string " << token->str << " position " << token->pos << " after " << token_old  << endl;
 			exit(-1);
 		}		
-		n->lexeme = token->lexeme;
-		*token = lexer->GetToken();
+		if(mas){
+			n->Type = TyMasF;	
+		}else{
+			n->lexeme = token->lexeme;
+			*token = lexer->GetToken();
+		}
 		return n;   	
     }
     if(token->type == TyStringname){
@@ -249,8 +315,9 @@ node* Parser::term(){
 	}
 	if(token->type == TyMas){
 		node *n = new node;
-		//todo где хранить инфу о номере в масс?
-    	if(found_id(token, n, 0, 1) == -1){
+		int mas = 0;
+		token->lexeme = mastoi(token->lexeme, &mas);
+    	if(found_id(token, n, 0, mas) == -1){
 			cout << token->lexeme << " was not declarated " << " string " << token->str << " position " << token->pos << " after " << token_old  << endl;
 			exit(-1);
 		}		
@@ -432,12 +499,12 @@ node* Parser::test(){
 
 node* Parser::express(){
 //	printf("exp\n");
-	if(token->type != TyIdentifier && token->type != TyInt && token->type != TyFloat && token->type != TyStringname){
+	if(token->type != TyIdentifier && token->type != TyInt && token->type != TyFloat && token->type != TyStringname && token->type != TyMas){
 		return test();
 	}
 	node *n = new node;
 	n = test();
-	if((n->Type == TyInt || n->Type == TyFloat || n->Type == TyStringname) && token->type == TyEqual){
+	if((n->Type == TyInt || n->Type == TyFloat || n->Type == TyStringname || n->Type == TyMasI) && token->type == TyEqual){
 		node *n1 = new node;
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
@@ -447,28 +514,27 @@ node* Parser::express(){
 		n->lexeme = "set";
 		n->son2 = express();
 	}
-	if(n->son2 == NULL){
-		cout << "something is missing " << " string "<< token->str << " position " << token->pos << " after " << token_old << endl;
-		exit(-1);			
-	}	
-	if(n->son2->type_num != n->type_num){
-		string flex;
-		switch(n->type_num){
-			case(TyInt):{
-				flex = "Int";
-				break;
+	if(n->son2 != NULL){
+		if(n->son2->type_num != n->type_num){
+			string flex;
+			cout << n->type_num;
+			switch(n->type_num){
+				case(TyInt):{
+					flex = "Int";
+					break;
+				}
+				case(TyFloat):{
+					flex = "Float";
+					break;
+				}
+				case(TyString):{
+					flex = "String";
+					break;
+				}
 			}
-			case(TyFloat):{
-				flex = "Float";
-				break;
-			}
-			case(TyString):{
-				flex = "String";
-				break;
-			}
-		}
 		cout << "cannot convert " << n->son2->lexeme << " to " << flex << " string "<< token->str << " position " << token->pos << endl;
 		exit(-1);			
+		}
 	}
 	return n;
 }

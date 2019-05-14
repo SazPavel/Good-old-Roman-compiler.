@@ -1,12 +1,8 @@
 #test
 SPQR{
-    totus i = 6;
-    si(i > 7){
-    	eventus i;
-	eventus "\n";
-    }aliud{
-	eventus "no";
-	eventus "\n";
-    }
-    eventus "end";
+    verum i[2] = 6.2 4.4;
+    eventus i[1];
+    eventus "\n";
+    totus j[3] = 3 1 2;
+    eventus j[2];
 }
