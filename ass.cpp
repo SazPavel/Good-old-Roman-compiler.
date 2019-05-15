@@ -51,26 +51,24 @@ string Ass::runTable(){
 		for(int j = 0; j < SIZEI; j++){
 			if(parser->id[i][j].Type != 0 && parser->id[i][j].Type != TyString){
 				if(parser->id[i][j].Type == TyMasI){
+					out += ".";
+					out +=  parser->id[i][j].value;
+					out +=  to_string(parser->id[i][j].level);
+					out +=  to_string(parser->id[i][j].sublevel);
+					out += ": \n";
 					for(int k = 0; k < parser->id[i][j].count; k++){
-						out += ".";
-						out +=  parser->id[i][j].value;
-						out +=  to_string(parser->id[i][j].level);
-						out +=  to_string(parser->id[i][j].sublevel);
-						out +=  to_string(k);
-						out += ": \n\t";
-						out += ".long ";
+						out += "\t.long ";
 						out += to_string(parser->id[i][j].masi[k]);
 						out += "\n";
 					}
 				}else if(parser->id[i][j].Type == TyMasF){
+					out += ".";
+					out +=  parser->id[i][j].value;
+					out +=  to_string(parser->id[i][j].level);
+					out +=  to_string(parser->id[i][j].sublevel);
+					out += ": \n";
 					for(int k = 0; k < parser->id[i][j].count; k++){
-						out += ".";
-						out +=  parser->id[i][j].value;
-						out +=  to_string(parser->id[i][j].level);
-						out +=  to_string(parser->id[i][j].sublevel);
-						out +=  to_string(k);
-						out += ": \n\t";
-						out += ".long 0b";
+						out += "\t.long 0b";
 						myfloat var;
 						var.f = parser->id[i][j].masf[k];
 						out += printIEEE(var);
@@ -124,9 +122,11 @@ string Ass::findName(node *n){
 
 string Ass::runCode(node *n, int flag){
 	switch(n->Type){
-		case TyManus:{
-			runCode(n->son1);
-			runCode(n->son2);
+		case Manus:{
+			if(n->son1 != NULL)
+				runCode(n->son1);
+			if(n->son2 != NULL)
+				runCode(n->son2);
 			break;
 		}
 		case TyDef:{
@@ -172,22 +172,16 @@ string Ass::runCode(node *n, int flag){
 			out += "\n";
 			break;
 		}
-		case TyMasI:{
-			string name = findName(n);
-			out += "\tmov\t";
-			out += ".";
-			out += name;
-			out += to_string(n->count);
-			out += "(%rip), %eax\n";
-			break;
-		}
+		case TyMasI:
 		case TyMasF:{
 			string name = findName(n);
+			out += "\tmov\t$";
+			out += to_string(n->count*4);
+			out += ", %ebx\n";
 			out += "\tmov\t";
 			out += ".";
 			out += name;
-			out += to_string(n->count);
-			out += "(%rip), %eax\n";
+			out += "(%ebx), %eax\n";
 			break;
 		}
 	/*	case TyString:{
