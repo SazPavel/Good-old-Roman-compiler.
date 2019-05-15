@@ -35,6 +35,7 @@ string type_to_str(int type){
 		case TySet: return "set";
 		case TyEql: return "eql";
 		case TyEOF: return "EOF";
+		case TyDef: return "define";
 	}
 
 	return "wat";
@@ -276,8 +277,9 @@ LexType Lexer::getLexemeType(string lexeme) {
 		if(lexeme == "totus") return TyInt;
 		if(lexeme == "verum") return TyFloat;
 		if(lexeme == "filum") return TyStringname;
-		if(lexeme == "QED") return TyReturn;
+		if(lexeme == "redi") return TyReturn;
 		if(lexeme == "SPQR") return TyMain;
+		if(lexeme == "definire") return TyDef;
 		if(lexeme == "==" || lexeme == "paritas") return TyEql;
 		if(IsIdentif(lexeme)) return TyIdentifier;
 		if(IsNumberI(lexeme)) return TyNumberI;

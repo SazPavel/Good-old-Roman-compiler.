@@ -13,8 +13,8 @@ struct identif{
 	int count;
 	string value;
 	string str = " ";
-	int level;
-	int sublevel;
+	int level = -1;
+	int sublevel = -1;
 	float *masf;
 	int *masi;
 };
@@ -44,6 +44,7 @@ class Parser {
 		node* test();
 		node* summa();
 		node* term();
+		node* func();
 		int array(int flag, node *n, Token *token);
 		int found_id(Token *token, node *n, int f, int mas);
 		

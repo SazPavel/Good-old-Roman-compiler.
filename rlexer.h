@@ -8,10 +8,10 @@ using namespace std;
 // '{': LBRA, '}': RBRA, '=': EQUAL, ';': SEMICOLON, '(': LPAR, ')': RPAR, '+': PLUS, '-': MINUS, '<' minor: LESS '>'major: OVER
 
 // ключевые слова
-// 'si': IF, 'aliud': ELSE, 'facite': DO, 'dum': WHILE, 'totus': INT, 'verum': FLOAT 'QED': return 'SPQR': main, 'filum': string, 'paritas': equal, 'eventus': print
+// 'si': IF, 'aliud': ELSE, 'facite': DO, 'dum': WHILE, 'totus': INT, 'verum': FLOAT 'QED': return 'SPQR': main, 'filum': string, 'paritas': equal, 'eventus': print, 'definire': def
 
 
-enum LexType { TyError, TyIdentifier, TyNumberF, TyNumberI, TyMas, TyString, TyLbra, TyRbra, TyEqual, TyLpar, TyRpar, TyPlus, TyMinus, TyMul, TyDivision, TyLess, TyOver, TyIf, TyElse, TyDo, TyWhile, TySemicolon, TyInt, TyFloat, TyStringname, TyPrint, TyReturn, TyMain, TySet, TyEql, TyEOF, Expr, SEQ, LessEq, OverEq, TyMasI, TyMasF};
+enum LexType { TyError, TyIdentifier, TyNumberF, TyNumberI, TyMas, TyString, TyLbra, TyRbra, TyEqual, TyLpar, TyRpar, TyPlus, TyMinus, TyMul, TyDivision, TyLess, TyOver, TyIf, TyElse, TyDo, TyWhile, TySemicolon, TyInt, TyFloat, TyStringname, TyPrint, TyReturn, TyMain, TySet, TyEql, TyEOF, Expr, SEQ, LessEq, OverEq, TyMasI, TyMasF, TyDef, Manus, Func};
 	
 enum LexerMode { LeNormal, LeString, LeComment };
 class Token {

@@ -124,9 +124,35 @@ string Ass::findName(node *n){
 
 string Ass::runCode(node *n, int flag){
 	switch(n->Type){
+		case TyManus:{
+			runCode(n->son1);
+			runCode(n->son2);
+			break;
+		}
+		case TyDef:{
+			out += "\n.text\n.globl ";
+			out += n->son1->lexeme;
+			out += "\n.def ";
+			out += n->son1->lexeme;
+			out += ";	.scl	2;	.type	32;	.endef\n";
+			out += n->son1->lexeme;
+			out += ":\n";
+			runCode(n->son2);
+			break;
+		}
+		case TyReturn:{
+			string name = findName(n);
+			out += "\tmov\t";
+			out += ".";
+			out += name;
+			out += "(%rip), %eax\n";
+			out += "\tret\n";
+			break;
+		}
 		case TyMain:{
 			out += "\n.text\n.globl main\n.def	main;	.scl	2;	.type	32;	.endef\nmain:\n";
 			runCode(n->son1);
+			out += "\tret\n";
 			break;
 		}
 		case TyNumberF:{
@@ -198,9 +224,9 @@ string Ass::runCode(node *n, int flag){
 		case TyPlus:{	
 			runCode(n->son2);
 			//from eax to ecx
-			out += "\tmov %eax, %ecx\n";
+			out += "\tmov\t%eax, %ecx\n";
 			runCode(n->son1);
-			out += "\tadd %ecx, %eax\n";
+			out += "\tadd\t%ecx, %eax\n";
 			break;
 		}
 		case TyMinus:{	

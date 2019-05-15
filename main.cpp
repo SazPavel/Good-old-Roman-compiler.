@@ -37,7 +37,6 @@ int main(){
 	fout.open("aaf.S");
 	fout << asst; 
 	string assc = ass.runCode(&n);
-	assc += "\tret\n";
 	fout << assc;
     fout.close(); 
 	//system("pause");
