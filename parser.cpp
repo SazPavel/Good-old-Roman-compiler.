@@ -529,7 +529,7 @@ node* Parser::express(){
 			n->lexeme = "func";
 			n->son2 = term();
 			levelflag += 1;
-			if(n->son2->Type != TyInt && n->son2->Type != TyFloat && n->son2->Type != TyMasI && n->son2->Type != TyMasF){
+			if(n->son2->Type != TyInt && n->son2->Type != TyFloat && n->son2->Type != TyMasI && n->son2->Type != TyMasF && n->son2->Type != TyNumberI && n->son2->Type != TyNumberF){
 				cout << "Verum or totus expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 				exit(-1);
 			}
@@ -738,19 +738,25 @@ node* Parser::func(){
             n2->son2 = n3;
 			n2->lexeme = "temp";
 			n2->Type = TyTemp;
-			if(n2->son1->Type != TyInt && n2->son1->Type != TyFloat && n2->son1->Type != TyMas){
+			if(n2->son1->Type != TyInt && n2->son1->Type != TyFloat){
 				cout << "Verum or totus expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 				exit(-1);
 			}
 			tmp++;
 		}
 		level -= 1;
+	}else{
+		cout << "( expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
+		exit(-1);
 	}
 	token_old = token->lexeme;
 	*token = lexer->GetToken();
 	node1->son1->count = tmp;
     node1->son1->son2 = n2;
-	n2->son2->son2 = step(1);
+    while(n2->son2->Type == TyTemp){
+    	n2 = n2->son2;
+	}
+	n2->son2 = step(1);
 	node1->son2 = func();
 	return node1;
 }

@@ -164,8 +164,9 @@ string Ass::runCode(node *n, int flag){
 						break;
 					}
 					default:{
+						out += "%eax,\t";
 						out += to_string(flag * 8 + 16);
-						out += "(%rsp)";
+						out += "(%rsp)\n\tmov\t%eax, ";
 						break;
 					}
 				}
@@ -177,10 +178,17 @@ string Ass::runCode(node *n, int flag){
 			break;
 		}
 		case Func:{
-			out += "\tmov\t(";
-			string name = findName(n->son2);
-			out += name;
-			out += "), ";
+			out += "\tmov\t";
+			if(n->son2->Type == TyInt || n->son2->Type == TyFloat || n->son2->Type == TyMasI || n->son2->Type == TyMasF){
+				out += "(";
+				string name = findName(n->son2);
+				out += name;
+				out += "), ";
+			}else{
+				out += "$";
+				out += n->son2->lexeme;
+				out += ", ";
+			}
 			switch(flag){
 				case(0):{
 					out += "%ecx\n";
@@ -199,8 +207,9 @@ string Ass::runCode(node *n, int flag){
 					break;
 				}
 				default:{
+					out += "%eax\n\tmov\t%eax,\t";
 					out += to_string(flag * 8);
-					out += "(%rsp)";
+					out += "(%rsp)\n";
 					break;
 				}
 			}
@@ -324,11 +333,11 @@ string Ass::runCode(node *n, int flag){
 				runCode(n->son1);      
 			switch(n->son1->type_num){
 				case(TyInt):{
-					out += "\tsubq\t$32, %rsp\n\tmovq\t%rsp, %rbp\n\tpushq\t%rbp\n\tmov\t%eax, %edx\n\tlea\t.printi_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$32, %rsp\n\tpopq\t%rbp\n";
+					out += "\tpushq\t%rbp\n\tsubq\t$32, %rsp\n\tmovq\t%rsp, %rbp\n\tmov\t%eax, %edx\n\tlea\t.printi_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$32, %rsp\n\tpopq\t%rbp\n";
 					break;
 				}
 				case(TyFloat):{
-					out += "\tsubq\t$64, %rsp\n\tmovq\t%rsp, %rbp\n\tpushq\t%rbp\n";
+					out += "\tpushq\t%rbp\n\tsubq\t$64, %rsp\n\tmovq\t%rsp, %rbp\n";
 					if(n->son1->Type == TyFloat){
 						string name = findName(n->son1);
 						out += "\tmovss\t.";
@@ -342,20 +351,20 @@ string Ass::runCode(node *n, int flag){
 				}
 				case(TyStringname):{
 					string name = findName(n->son1);
-    				out += "\tsubq\t$48, %rsp\n\tmovq\t%rsp, %rbp\n\tpushq\t%rbp\n\tleaq\t.";
+    				out += "pushq\t%rbp\n\tsubq\t$48, %rsp\n\tmovq\t%rsp, %rbp\n\t\tleaq\t.";
     				out += 	name;
 					out += "(%rip), %rdx\n\tleaq\t.prints_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$48, %rsp\n\tpopq\t%rbp\n";
 					break;
 				}
 				case(TyString):{
 					string name = findName(n->son1);
-    				out += "\tsubq\t$32, %rsp\n\tmovq\t%rsp, %rbp\n\tpushq\t%rbp\n\tleaq\t.";
+    				out += "pushq\t%rbp\n\tsubq\t$32, %rsp\n\tmovq\t%rsp, %rbp\n\t\tleaq\t.";
     				out += 	name;
 					out += "(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$32, %rsp\n\tpopq\t%rbp\n";
 					break;
 				}
 				case(TyMasI):{
-					out += "\tsubq\t$32, %rsp\n\tmovq\t%rsp, %rbp\n\tpushq\t%rbp\n\tmov\t%eax, %edx\n\tlea\t.printi_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$32, %rsp\n\tpopq\t%rbp\n";
+					out += "pushq\t%rbp\n\tsubq\t$32, %rsp\n\tmovq\t%rsp, %rbp\n\t\tmov\t%eax, %edx\n\tlea\t.printi_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$32, %rsp\n\tpopq\t%rbp\n";
 					break;
 				}
 			}	
