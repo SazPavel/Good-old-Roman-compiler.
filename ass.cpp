@@ -10,6 +10,8 @@ Ass::Ass(Parser *parser){
 Ass::~Ass(){
 }
 
+
+//перевод чисел с плавающей запятой в вид для ассемблера
 typedef union { 
   
     float f; 
@@ -45,6 +47,7 @@ string printIEEE(myfloat var)
     return out;
 } 
 
+//запись в файл таблицы идентификаторов
 string Ass::runTable(){
 	string out = ".data\n.float0:\n\t.long\n";
 	for(int i = 0; i < SIZEID; i++){
@@ -80,14 +83,15 @@ string Ass::runTable(){
 					out +=  to_string(parser->id[i][j].level);
 					out +=  to_string(parser->id[i][j].sublevel);
 					out += ": \n\t";
-					out += ".long 0";
+					out += ".long 0";//если не заполнить хоть чем-нибудь, ассемблер будет танцевать польку
 					out += "\n";
 				}
 			}
 		}
 	}	
+	//специальные строки для вывода на экран
 	out += "\n.prints_format:\n\t.string \"%s\\0\"\n.printi_format:\n\t.string \"%d\\0\"\n.printf_format:\n\t.string \"%f\\0\"\n";
-	
+	//строки нужно писать после обычных переменных
 	for(int i = 0; i < SIZEID; i++){
 		for(int j = 0; j < SIZEI; j++){
 			if(parser->id[i][j].Type == TyString){
@@ -104,6 +108,7 @@ string Ass::runTable(){
 	return out;
 }
 
+//поиск в таблице идентификаторов и возвращение строки, по которой можно найти этот адрес
 string Ass::findName(node *n, int flag){
 	string outt;
 	int idn = (parser->hash_fn(n->lexeme))%SIZEID;	
@@ -121,16 +126,17 @@ string Ass::findName(node *n, int flag){
 	exit(-1);
 }
 
+//поiхали
 string Ass::runCode(node *n, int flag){
 	switch(n->Type){
-		case Manus:{
+		case Manus:{//начальные узлы
 			if(n->son1 != NULL)
 				runCode(n->son1);
 			if(n->son2 != NULL)
 				runCode(n->son2);
 			break;
 		}
-		case TyDef:{
+		case TyDef:{//если функция - создаем всё необходимое для функции
 			out += "\n\t.globl ";
 			out += n->son1->lexeme;
 			out += "\n\t.def ";
@@ -142,7 +148,7 @@ string Ass::runCode(node *n, int flag){
 			runCode(n->son2);
 			break;
 		}
-		case TyTemp:{
+		case TyTemp:{//считываем все переменные поданные в функцию
 			if(n->son1){
 				string name = findName(n->son1);
 				out += "\tmov\t";
@@ -177,7 +183,7 @@ string Ass::runCode(node *n, int flag){
 			runCode(n->son2, flag + 1);			
 			break;
 		}
-		case Func:{
+		case Func:{//правильно подаем в функцию переменные
 			out += "\tmov\t";
 			if(n->son2->Type == TyInt || n->son2->Type == TyFloat || n->son2->Type == TyMasI || n->son2->Type == TyMasF){
 				out += "(";
@@ -222,7 +228,7 @@ string Ass::runCode(node *n, int flag){
 			}
 			break;
 		}
-		case TyReturn:{
+		case TyReturn:{//возвраещаем значение через регистр %eax
 			out += "\tmov\t%rbp, %rsp\n\tpop\t%rbp\n";
 			string name = findName(n->son1);
 			out += "\tmov\t(";
@@ -231,13 +237,13 @@ string Ass::runCode(node *n, int flag){
 			out += "\tret\n";
 			break;
 		}
-		case TyMain:{
+		case TyMain:{//основная функция
 			out += "\n\t.text\n\t.globl main\n\t.def	main;	.scl	2;	.type	32;	.endef\nmain:\n\tpushq\t%rbp\n\tmovq\t%rsp, %rbp\n";
 			runCode(n->son1);
 			out += "\tmovl\t$0, %eax\n\tpopq\t%rbp\n\tret\n";
 			break;
 		}
-		case TyNumberF:{
+		case TyNumberF:{//дробное число
 			myfloat var;
 			var.f = stof(n->lexeme);
 			string name = printIEEE(var);
@@ -247,7 +253,7 @@ string Ass::runCode(node *n, int flag){
 			out += "\n";
 			break;
 		}
-		case TyNumberI:{
+		case TyNumberI:{//интовое число
 			out += "\tmov\t$";
 			out += n->lexeme;
 			out += ", %eax";
@@ -255,7 +261,7 @@ string Ass::runCode(node *n, int flag){
 			break;
 		}
 		case TyMasI:
-		case TyMasF:{
+		case TyMasF:{//массивы
 			string name = findName(n);
 			out += "\tmov\t$";
 			out += to_string(n->count*4);
@@ -272,21 +278,21 @@ string Ass::runCode(node *n, int flag){
 			out += "\n";
 			break;
 		}*/
-		case TyInt:{
+		case TyInt:{//переменная типа инт
 			string name = findName(n);
 			out += "\tmov\t(";
 			out += name;
 			out += "), %eax\n";
 			break;
 		}
-		case TyFloat:{
+		case TyFloat:{//переменная типа флоат
 			string name = findName(n);
 			out += "\tmov\t(";
 			out += name;
 			out += "), %eax\n";
 			break;
 		}
-		case TyStringname:{
+		case TyStringname:{//переменная типа строка?
 			string name = findName(n);
 			out += "\tmov\t(";
 			out += ".";
@@ -294,7 +300,7 @@ string Ass::runCode(node *n, int flag){
 			out += "), %eax\n";
 			break;
 		}
-		case TyPlus:{	
+		case TyPlus:{//сложение (К.О)	
 			runCode(n->son2);
 			//from eax to ecx
 			out += "\tmov\t%eax, %ecx\n";
@@ -302,7 +308,7 @@ string Ass::runCode(node *n, int flag){
 			out += "\tadd\t%ecx, %eax\n";
 			break;
 		}
-		case TyMinus:{	
+		case TyMinus:{//вычитание (2К.О)
 			runCode(n->son2);
 			out += "\tmov\t%eax, %ecx\n";
 			//from eax to ecx
@@ -310,7 +316,7 @@ string Ass::runCode(node *n, int flag){
 			out += "\tsub\t%ecx, %eax\n";
 			break;
 		}
-		case TyMul:{
+		case TyMul:{//умножение (3 К.О)
 			runCode(n->son2);
 			out += "\tmov\t%eax, %ecx\n";	
 			//from eax to ecx
@@ -319,7 +325,7 @@ string Ass::runCode(node *n, int flag){
 			//mul
 			break;
 		}
-		case TyDivision:{
+		case TyDivision:{//деление (капитан очевидность сегодня в ударе)
 			runCode(n->son2);
 			out += "\tmov\t%eax, %ecx\n";	
 			//from eax to ecx
@@ -328,7 +334,7 @@ string Ass::runCode(node *n, int flag){
 			//division
 			break;
 		}
-		case TyPrint:{
+		case TyPrint:{//вывод на экран
 			if(n->son1->type_num != TyStringname)
 				runCode(n->son1);      
 			switch(n->son1->type_num){
@@ -336,7 +342,7 @@ string Ass::runCode(node *n, int flag){
 					out += "\tpushq\t%rbp\n\tsubq\t$32, %rsp\n\tmovq\t%rsp, %rbp\n\tmov\t%eax, %edx\n\tlea\t.printi_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$32, %rsp\n\tpopq\t%rbp\n";
 					break;
 				}
-				case(TyFloat):{
+				case(TyFloat):{//флоат можно вывести на экран только если он переменная
 					out += "\tpushq\t%rbp\n\tsubq\t$64, %rsp\n\tmovq\t%rsp, %rbp\n";
 					if(n->son1->Type == TyFloat){
 						string name = findName(n->son1);
@@ -351,27 +357,21 @@ string Ass::runCode(node *n, int flag){
 				}
 				case(TyStringname):{
 					string name = findName(n->son1);
-    				out += "pushq\t%rbp\n\tsubq\t$48, %rsp\n\tmovq\t%rsp, %rbp\n\t\tleaq\t.";
+    				out += "pushq\t%rbp\n\tsubq\t$48, %rsp\n\tmovq\t%rsp, %rbp\n\tleaq\t(";
     				out += 	name;
-					out += "(%rip), %rdx\n\tleaq\t.prints_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$48, %rsp\n\tpopq\t%rbp\n";
-					break;
-				}
-				case(TyString):{
-					string name = findName(n->son1);
-    				out += "pushq\t%rbp\n\tsubq\t$32, %rsp\n\tmovq\t%rsp, %rbp\n\t\tleaq\t.";
-    				out += 	name;
-					out += "(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$32, %rsp\n\tpopq\t%rbp\n";
+					out += "), %rdx\n\tleaq\t.prints_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$48, %rsp\n\tpopq\t%rbp\n";
 					break;
 				}
 				case(TyMasI):{
 					out += "pushq\t%rbp\n\tsubq\t$32, %rsp\n\tmovq\t%rsp, %rbp\n\t\tmov\t%eax, %edx\n\tlea\t.printi_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$32, %rsp\n\tpopq\t%rbp\n";
 					break;
 				}
+				//TODO MasF
 			}	
 				
 			break;
 		}
-		case TyLess:{
+		case TyLess:{//проверка на меньше, если флаг то инвертировать
 			runCode(n->son2);
 			out += "\tmov\t%eax, %ecx\n";
 			runCode(n->son1);
