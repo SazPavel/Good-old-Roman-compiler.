@@ -13,6 +13,7 @@ class Ass {
 		string runCode(node *n, int flag = 0);
 		string findName(node *n);
 	protected:
+    	hash <std::string> hash_fn;
 		int num_loop;
 		string out = "\n";
 		Parser *parser;

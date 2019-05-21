@@ -49,10 +49,10 @@ string Ass::runTable(){
 	string out = ".data\n.float0:\n\t.long\n";
 	for(int i = 0; i < SIZEID; i++){
 		for(int j = 0; j < SIZEI; j++){
-			if(parser->id[i][j].Type != 0 && parser->id[i][j].Type != TyString){
+			if(parser->id[i][j].Type != 0 && parser->id[i][j].Type != TyString && parser->id[i][j].Type != TyStringname){
 				if(parser->id[i][j].Type == TyMasI){
 					out += ".";
-					out +=  parser->id[i][j].value;
+					out +=  to_string(hash_fn(parser->id[i][j].value));
 					out +=  to_string(parser->id[i][j].level);
 					out +=  to_string(parser->id[i][j].sublevel);
 					out += ": \n";
@@ -63,7 +63,7 @@ string Ass::runTable(){
 					}
 				}else if(parser->id[i][j].Type == TyMasF){
 					out += ".";
-					out +=  parser->id[i][j].value;
+					out +=  to_string(hash_fn(parser->id[i][j].value));
 					out +=  to_string(parser->id[i][j].level);
 					out +=  to_string(parser->id[i][j].sublevel);
 					out += ": \n";
@@ -76,7 +76,7 @@ string Ass::runTable(){
 					}
 				}else{
 					out += ".";
-					out +=  parser->id[i][j].value;
+					out +=  to_string(hash_fn(parser->id[i][j].value));
 					out +=  to_string(parser->id[i][j].level);
 					out +=  to_string(parser->id[i][j].sublevel);
 					out += ": \n\t";
@@ -92,11 +92,11 @@ string Ass::runTable(){
 		for(int j = 0; j < SIZEI; j++){
 			if(parser->id[i][j].Type == TyString){
 				out += ".";
-				out +=  parser->id[i][j].value;
+				out +=  to_string(hash_fn(parser->id[i][j].value));
 				out +=  to_string(parser->id[i][j].level);
 				out +=  to_string(parser->id[i][j].sublevel);
-				out += ": \n\t.string";
-				out += parser->id[i][j].str;
+				out += ": \n\t.string ";
+				out +=  parser->id[i][j].str;
 				out += "\n";
 			}
 		}
@@ -110,7 +110,7 @@ string Ass::findName(node *n){
 //	cout << n->lexeme <<endl;
 	for(int i = 0; i < SIZEI; i++){
 		if(parser->id[idn][i].level == n->level && parser->id[idn][i].sublevel == n->sublevel){
-			outt += parser->id[idn][i].value;
+			outt += to_string(hash_fn(parser->id[idn][i].value));
 			outt += to_string(parser->id[idn][i].level);
 			outt += to_string(parser->id[idn][i].sublevel);
 			return outt;
@@ -245,7 +245,7 @@ string Ass::runCode(node *n, int flag){
 			out += "\tmov\t%eax, %ecx\n";	
 			//from eax to ecx
 			runCode(n->son1);
-			out += "\tmov\t$0, %edx\n\tdiv %ecx\n";
+			out += "\tmov\t$0, %edx\n\tdiv\t%ecx\n";
 			//division
 			break;
 		}
@@ -395,12 +395,19 @@ string Ass::runCode(node *n, int flag){
 		case TySet:{
 			runCode(n->son2);
 			string name = findName(n->son1);
-			out += "\tmov\t%eax, .";
-			out += name;
 			if(n->son1->Type == TyMasI || n->son1->Type == TyMasF){
-				out += to_string(n->son1->count);
+				out += "\tmov\t$";
+				out += to_string(n->son1->count*4);
+				out += ", %ebx\n";
+				out += "\tmov\t";
+				out += ".";
+				out += name;
+				out += "(%ebx), %eax\n";
+			}else{
+				out += "\tmov\t%eax, .";
+				out += name;
+				out += "(%rip)\n";			
 			}
-			out += "(%rip)\n";			
 			break;
 		}
 		default:{

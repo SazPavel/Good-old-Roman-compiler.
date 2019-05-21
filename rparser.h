@@ -51,7 +51,7 @@ class Parser {
     	hash <std::string> hash_fn;		
 		identif id[SIZEID][SIZEI] = {};
 	protected:
-		int level, sublevel, levelflag;
+		int level, sublevel[10], levelflag;
 		string token_old;
 		int found_str_id(node *tree);
 		Lexer *lexer;
