@@ -11,7 +11,7 @@ class Ass {
 		
 		string runTable();
 		string runCode(node *n, int flag = 0);
-		string findName(node *n);
+		string findName(node *n, int flag = 0);
 	protected:
     	hash <std::string> hash_fn;
 		int num_loop;

@@ -40,18 +40,13 @@ void cop(node *n1, node *n){
 	n->Type = 0;
 }
 
+
 int Parser::found_str_id(node *tree){
 	int idn = (hash_fn(tree->son1->lexeme))%SIZEID;
 	for(int i = SIZEI - 1; i >= 0; i--){
 		if((tree->son1->lexeme == id[idn][i].value || tree->son1->lexeme == id[idn][i].str) && id[idn][i].level <= tree->son1->level){
 		//	cout << tree->son1->lexeme << "   " << id[idn][i].value << endl;
-			int end = tree->son2->lexeme.size();
-			for(int i = 0; i < end; i++){
-				if(tree->son2->lexeme[i] == '\\' && tree->son2->lexeme[i+1] == '"'){
-		    		tree->son2->lexeme.erase(i, 1); 
-				}
-			}
-			id[idn][i].str = tree->son2->lexeme.substr(1, tree->son2->lexeme.size()-2);
+			id[idn][i].str = tree->son2->lexeme;
 			return idn;
 		}		
 	}
@@ -59,7 +54,7 @@ int Parser::found_str_id(node *tree){
 		if(id[idn][i].Type == 0){
 			id[idn][i].Type = TyString;
 			id[idn][i].BaseType = TyString;
-			id[idn][i].str = tree->son1->lexeme.substr(1, tree->son1->lexeme.size()-2);
+			id[idn][i].str = tree->son1->lexeme;
 			id[idn][i].value = tree->son1->lexeme;
 			id[idn][i].level = 0;
 			id[idn][i].sublevel = 0;
@@ -198,6 +193,7 @@ Parser::Parser(Lexer *lexer, Token *token){
 	this->token = token;
 	this->lexer = lexer;
 	level = 0;
+	levelflag = 1;
 	for(int i = 0; i < 10; i++){
 		sublevel[i] = 0;
 	}
@@ -532,9 +528,14 @@ node* Parser::express(){
 			n->Type = Func;
 			n->lexeme = "func";
 			n->son2 = term();
+			levelflag += 1;
 			if(n->son2->Type != TyInt && n->son2->Type != TyFloat && n->son2->Type != TyMasI && n->son2->Type != TyMasF){
 				cout << "Verum or totus expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 				exit(-1);
+			}
+			if(n->son1->Type != Func){
+				n->son1->count = levelflag;
+				levelflag = 0;
 			}
 		}
 		token_old = token->lexeme;
@@ -736,7 +737,7 @@ node* Parser::func(){
 			n2->son1 = term();
             n2->son2 = n3;
 			n2->lexeme = "temp";
-			n2->Type = 0;
+			n2->Type = TyTemp;
 			if(n2->son1->Type != TyInt && n2->son1->Type != TyFloat && n2->son1->Type != TyMas){
 				cout << "Verum or totus expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 				exit(-1);

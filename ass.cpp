@@ -51,7 +51,7 @@ string Ass::runTable(){
 		for(int j = 0; j < SIZEI; j++){
 			if(parser->id[i][j].Type != 0 && parser->id[i][j].Type != TyString && parser->id[i][j].Type != TyStringname){
 				if(parser->id[i][j].Type == TyMasI){
-					out += ".";
+					out += "a";
 					out +=  to_string(hash_fn(parser->id[i][j].value));
 					out +=  to_string(parser->id[i][j].level);
 					out +=  to_string(parser->id[i][j].sublevel);
@@ -62,7 +62,7 @@ string Ass::runTable(){
 						out += "\n";
 					}
 				}else if(parser->id[i][j].Type == TyMasF){
-					out += ".";
+					out += "a";
 					out +=  to_string(hash_fn(parser->id[i][j].value));
 					out +=  to_string(parser->id[i][j].level);
 					out +=  to_string(parser->id[i][j].sublevel);
@@ -75,12 +75,12 @@ string Ass::runTable(){
 						out += "\n";
 					}
 				}else{
-					out += ".";
+					out += "a";
 					out +=  to_string(hash_fn(parser->id[i][j].value));
 					out +=  to_string(parser->id[i][j].level);
 					out +=  to_string(parser->id[i][j].sublevel);
 					out += ": \n\t";
-					out += ".long";
+					out += ".long 0";
 					out += "\n";
 				}
 			}
@@ -91,7 +91,7 @@ string Ass::runTable(){
 	for(int i = 0; i < SIZEID; i++){
 		for(int j = 0; j < SIZEI; j++){
 			if(parser->id[i][j].Type == TyString){
-				out += ".";
+				out += "a";
 				out +=  to_string(hash_fn(parser->id[i][j].value));
 				out +=  to_string(parser->id[i][j].level);
 				out +=  to_string(parser->id[i][j].sublevel);
@@ -104,19 +104,20 @@ string Ass::runTable(){
 	return out;
 }
 
-string Ass::findName(node *n){
+string Ass::findName(node *n, int flag){
 	string outt;
 	int idn = (parser->hash_fn(n->lexeme))%SIZEID;	
-//	cout << n->lexeme <<endl;
 	for(int i = 0; i < SIZEI; i++){
 		if(parser->id[idn][i].level == n->level && parser->id[idn][i].sublevel == n->sublevel){
+			if(flag)
+				return parser->id[idn][i].value;
+			outt += "a";
 			outt += to_string(hash_fn(parser->id[idn][i].value));
 			outt += to_string(parser->id[idn][i].level);
 			outt += to_string(parser->id[idn][i].sublevel);
 			return outt;
 		}
 	}
-	cout << "error in table of id"  << endl;
 	exit(-1);
 }
 
@@ -130,29 +131,101 @@ string Ass::runCode(node *n, int flag){
 			break;
 		}
 		case TyDef:{
-			out += "\n.text\n.globl ";
+			out += "\n\t.globl ";
 			out += n->son1->lexeme;
-			out += "\n.def ";
+			out += "\n\t.def ";
 			out += n->son1->lexeme;
 			out += ";	.scl	2;	.type	32;	.endef\n";
 			out += n->son1->lexeme;
 			out += ":\n";
+			out += "\tpush\t%rbp\n\tmov\t%rsp, %rbp\n";
 			runCode(n->son2);
 			break;
 		}
-		case TyReturn:{
-			string name = findName(n);
-			out += "\tmov\t";
-			out += ".";
+		case TyTemp:{
+			if(n->son1){
+				string name = findName(n->son1);
+				out += "\tmov\t";
+				switch(flag){
+					case(0):{
+						out += "%ecx, ";
+						break;
+					}
+					case(1):{
+						out += "%edx, ";
+						break;
+					}
+					case(2):{
+						out += "%r8d, ";
+						break;
+					}
+					case(3):{
+						out += "%r9d, ";
+						break;
+					}
+					default:{
+						out += to_string(flag * 8 + 16);
+						out += "(%rsp)";
+						break;
+					}
+				}
+				out += "(";				
+				out += name;
+				out += ")\n";
+			}
+			runCode(n->son2, flag + 1);			
+			break;
+		}
+		case Func:{
+			out += "\tmov\t(";
+			string name = findName(n->son2);
 			out += name;
-			out += "(%rip), %eax\n";
+			out += "), ";
+			switch(flag){
+				case(0):{
+					out += "%ecx\n";
+					break;
+				}
+				case(1):{
+					out += "%edx\n";
+					break;
+				}
+				case(2):{
+					out += "%r8d\n";
+					break;
+				}
+				case(3):{
+					out += "%r9d\n";
+					break;
+				}
+				default:{
+					out += to_string(flag * 8);
+					out += "(%rsp)";
+					break;
+				}
+			}
+			if(n->son1->Type != Func){
+				out += "\tcall\t";
+				out += findName(n->son1, 1);
+				out += "\n";
+			}else{
+				runCode(n->son1, flag + 1);
+			}
+			break;
+		}
+		case TyReturn:{
+			out += "\tmov\t%rbp, %rsp\n\tpop\t%rbp\n";
+			string name = findName(n->son1);
+			out += "\tmov\t(";
+			out += name;
+			out += "), %eax\n";
 			out += "\tret\n";
 			break;
 		}
 		case TyMain:{
-			out += "\n.text\n.globl main\n.def	main;	.scl	2;	.type	32;	.endef\nmain:\n";
+			out += "\n\t.text\n\t.globl main\n\t.def	main;	.scl	2;	.type	32;	.endef\nmain:\n\tpushq\t%rbp\n\tmovq\t%rsp, %rbp\n";
 			runCode(n->son1);
-			out += "\tret\n";
+			out += "\tmovl\t$0, %eax\n\tpopq\t%rbp\n\tret\n";
 			break;
 		}
 		case TyNumberF:{
@@ -178,10 +251,9 @@ string Ass::runCode(node *n, int flag){
 			out += "\tmov\t$";
 			out += to_string(n->count*4);
 			out += ", %ebx\n";
-			out += "\tmov\t";
-			out += ".";
+			out += "\tmov\t(";
 			out += name;
-			out += "(%ebx), %eax\n";
+			out += "), %eax\n";
 			break;
 		}
 	/*	case TyString:{
@@ -193,26 +265,24 @@ string Ass::runCode(node *n, int flag){
 		}*/
 		case TyInt:{
 			string name = findName(n);
-			out += "\tmov\t";
-			out += ".";
+			out += "\tmov\t(";
 			out += name;
-			out += "(%rip), %eax\n";
+			out += "), %eax\n";
 			break;
 		}
 		case TyFloat:{
 			string name = findName(n);
-			out += "\tmov\t";
-			out += ".";
+			out += "\tmov\t(";
 			out += name;
-			out += "(%rip), %eax\n";
+			out += "), %eax\n";
 			break;
 		}
 		case TyStringname:{
 			string name = findName(n);
-			out += "\tmov\t";
+			out += "\tmov\t(";
 			out += ".";
 			out += name;
-			out += "(%rip), %eax\n";
+			out += "), %eax\n";
 			break;
 		}
 		case TyPlus:{	
@@ -399,14 +469,13 @@ string Ass::runCode(node *n, int flag){
 				out += "\tmov\t$";
 				out += to_string(n->son1->count*4);
 				out += ", %ebx\n";
-				out += "\tmov\t";
-				out += ".";
+				out += "\tmov\t(";
 				out += name;
-				out += "(%ebx), %eax\n";
+				out += "), %eax\n\tmov\t$0, %ebx\n";
 			}else{
-				out += "\tmov\t%eax, .";
+				out += "\tmov\t%eax, (";
 				out += name;
-				out += "(%rip)\n";			
+				out += ")\n";			
 			}
 			break;
 		}

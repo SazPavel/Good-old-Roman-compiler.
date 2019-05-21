@@ -1,8 +1,14 @@
+#test
+definire totus F(totus n totus k totus i totus o){
+   # eventus n;
+    o = o + 1;
+    redi o;
+}
 SPQR{
-   filum h = "\"g\"";
-   verum j[2] = 4.2 7.9;
+   totus h = 1;
+   totus g = 2;
+   totus j = 3;
+   totus l = 8;
+   h = F(h g j l);
    eventus h;
-   eventus "kk";
-   j[0] = 6.9;
-   eventus j[1];
 }
