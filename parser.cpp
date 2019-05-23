@@ -3,7 +3,7 @@
 
 using namespace std;
 
-string mastoi(string str, int *count){
+string mastoi(string str, int *count){//делит лексему массив на им€ массива и элемент
 	int found = str.find("[");
 	int found2 = str.find("]");
 	string counts = str.substr(found+1, found2-2);
@@ -12,17 +12,17 @@ string mastoi(string str, int *count){
 	return str;
 }
 
-string itofl(string str){
+string itofl(string str){//превращает инт во флоат
 	return str +".0";
 }
 
-string ftoin(string str){
+string ftoin(string str){//превращает флоат в инт
 	int found = str.find(".");
 	str = str.substr(0, found);
 	return str;
 }
 
-void cop(node *n1, node *n){
+void cop(node *n1, node *n){//копирует узел n в n1 и очищает n
 	n1->lexeme = n->lexeme;
 	n1->son1 = n->son1;
 	n1->son2 = n->son2;
@@ -41,7 +41,7 @@ void cop(node *n1, node *n){
 }
 
 
-int Parser::found_str_id(node *tree){
+int Parser::found_str_id(node *tree){//ищет строку в таблице идентификаторов и пытаетс€ задать ей значение
 	int idn = (hash_fn(tree->son1->lexeme))%SIZEID;
 	for(int i = SIZEI - 1; i >= 0; i--){
 		if((tree->son1->lexeme == id[idn][i].value || tree->son1->lexeme == id[idn][i].str) && id[idn][i].level <= tree->son1->level){
@@ -68,7 +68,7 @@ int Parser::found_str_id(node *tree){
 	return -1;
 }
 
-void Parser::treeprint(node *tree, int n){
+void Parser::treeprint(node *tree, int n){//печатает на экран дерево
     if (tree) {
     	if(tree->Type == Expr && (tree->son1->Type == TyMasI || tree->son1->Type == TyMasF) && tree->son1->son1 == NULL)
     		tree->son1->Type = 0;
@@ -80,8 +80,7 @@ void Parser::treeprint(node *tree, int n){
     	treeprint(tree->son1, n + 3);	
     	treeprint(tree->son2, n + 3);
     	treeprint(tree->son3, n + 3);
-		if((tree->Type == TySet && tree->son1->Type == TyStringname && tree->son2->Type == TyString) || (tree->Type == TyPrint && tree->son1->Type == TyString)){
-			int s = found_str_id(tree);
+		if((tree->Type == TySet && tree->son1->Type == TyStringname && tree->son2->Type == TyString) || (tree->Type == TyPrint && tree->son1->Type == TyString)){//если встречает строку пытаетс€ записать значение в таблицу идентификаторов
 			if(s == -1){
 				cout << " Strange error " << endl;
 			}else{
@@ -96,9 +95,9 @@ void Parser::treeprint(node *tree, int n){
     }
 }
 
-int Parser::found_id(Token *token, node *n, int f, int mas){
+int Parser::found_id(Token *token, node *n, int f, int mas){//ищет переменную в таблице идентификаторов
 	int idn = (hash_fn(token->lexeme))%SIZEID;
-	if(f){			
+	if(f){//если нужно создать новую
 		for(int i = 0; i < SIZEI; i++){
 			if(id[idn][i].level == level && id[idn][i].sublevel == sublevel[level])
 				return -1;	
@@ -168,11 +167,11 @@ int Parser::found_id(Token *token, node *n, int f, int mas){
 				return idn;
 			}
 		}
-	}else{
+	}else{//если нужно найти уже существующую
 		for(int i = SIZEI - 1; i >= 0; i--){
 			if(token->lexeme == id[idn][i].value && id[idn][i].level <= level){
 				if(mas > id[idn][i].count){
-					cout << "overlimited mass" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
+					cout << "Array overflow" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 					exit(-1);
 				}
 				if(mas){
@@ -193,7 +192,7 @@ int Parser::found_id(Token *token, node *n, int f, int mas){
 }
 
 
-Parser::Parser(Lexer *lexer, Token *token){
+Parser::Parser(Lexer *lexer, Token *token){//конструктор(конструирует)
 	this->token = token;
 	this->lexer = lexer;
 	level = 0;
@@ -203,10 +202,10 @@ Parser::Parser(Lexer *lexer, Token *token){
 	}
 }
 
-Parser::~Parser(){
+Parser::~Parser(){//деструктор(деструктурирует)
 }
 
-node* Parser::term(){
+node* Parser::term(){//переменные, числа, строки, массивы, чебуреки, гор€ча€ кукуруза, свежа€, налетай, покупай
 //	printf("term\n");
 //TODO
     if(token->type == TyInt){
@@ -339,9 +338,9 @@ node* Parser::summa(){
 //	printf("summa\n");
 	node *n = new node;
 	n = term();
-	while(token->type == TyMinus || token->type == TyPlus || token->type == TyMul || token->type == TyDivision){
+	while(token->type == TyMinus || token->type == TyPlus || token->type == TyMul || token->type == TyDivision){//пока не закончились ариф действи€ - выполн€ть их
 		node *n1 = new node;
-		if(n->son2 == NULL || token->type == TyMinus || token->type == TyPlus){
+		if(n->son2 == NULL || token->type == TyMinus || token->type == TyPlus){//у + и - меньше арифметический приоритет
 			cop(n1, n);
 			n->son1 = n1;
 			
@@ -354,8 +353,8 @@ node* Parser::summa(){
 				cout << "error string arithemetics" << " string "<< token->str << " position " << token->pos << endl;
 				exit(-1);
 			}
-			if(n->son2->type_num != n->type_num){
-				if(n->type_num == TyString || n->son2->type_num == TyString){
+			if(n->son2->type_num != n->type_num){//если разные типы данных
+				if(n->type_num == TyString || n->son2->type_num == TyString){//строки в пролЄте
 					string flex;
 					switch(n->type_num){
 						case(TyInt):{
@@ -374,7 +373,7 @@ node* Parser::summa(){
 					cout << "cannot convert " << n->son2->lexeme << " to " << flex << " string "<< token->str << " position " << token->pos << endl;
 					exit(-1);
 				}
-				if(n->son2->type_num == TyInt && n->type_num == TyFloat){
+				if(n->son2->type_num == TyInt && n->type_num == TyFloat){//а вот остальное можно привести
 					n->son2->lexeme = itofl(n->son2->lexeme);
 					n->son2->Type = TyNumberF;
 					n->son2->type_num = TyFloat;
@@ -385,7 +384,7 @@ node* Parser::summa(){
 					n->son2->type_num = TyInt;
 				}
 			}
-		}else{
+		}else{//а вот * и / ввыше приоритетом
 			n1->son1 = n->son2;
 			n->son2 = n1;
 			n1->type_num = n1->son1->type_num;
@@ -399,7 +398,7 @@ node* Parser::summa(){
 				exit(-1);
 			}
 			
-			if(n1->son2->type_num != n1->type_num){
+			if(n1->son2->type_num != n1->type_num){//оп€ть проверка на разные типы данных
 				if(n1->type_num == TyString || n1->son2->type_num == TyString){
 					string flex;
 					switch(n1->type_num){
@@ -436,7 +435,7 @@ node* Parser::summa(){
 	return n;
 }
 
-node* Parser::test(){	
+node* Parser::test(){//логические тесты
 //	printf("test\n");
 	node *n = new node;
 	n = summa();
@@ -482,7 +481,7 @@ node* Parser::test(){
 		*token = lexer->GetToken();
 		n->son2 = summa();			
 	}
-	if(f && n->son2->type_num != n->type_num){
+	if(f && n->son2->type_num != n->type_num){//сравнивать разные типы данных нельз€ пн€тненько?
 		string flex;
 		switch(n->type_num){
 			case(TyInt):{
@@ -511,7 +510,7 @@ node* Parser::express(){
 	}
 	node *n = new node;
 	n = test();
-	if((n->Type == TyInt || n->Type == TyFloat || n->Type == TyStringname || n->Type == TyMasI || n->Type == TyMasF) && token->type == TyEqual){
+	if((n->Type == TyInt || n->Type == TyFloat || n->Type == TyStringname || n->Type == TyMasI || n->Type == TyMasF) && token->type == TyEqual){//если присвоение значени€
 		node *n1 = new node;
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
@@ -522,7 +521,7 @@ node* Parser::express(){
 		n->son2 = express();
 	}
 	
-	if((n->Type == TyInt || n->Type == TyFloat || n->Type == TyMas) && token->type == TyLpar){
+	if((n->Type == TyInt || n->Type == TyFloat || n->Type == TyMas) && token->type == TyLpar){//заполнение массива
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		while(token->type != TyRpar){
@@ -569,7 +568,7 @@ node* Parser::express(){
 	return n;
 }
 	
-node* Parser::par_exp(int t){
+node* Parser::par_exp(int t){//проверка на скобочки, в том числе те, которые могут быть в арифметических выражени€х
 //	printf("par_exp\n");
 	node *n = new node;
 	if(token->type != TyLpar){
@@ -595,19 +594,19 @@ node* Parser::par_exp(int t){
 	return n;	
 }
 
-node* Parser::step(int flag){
+node* Parser::step(int flag){//основна€ проверка
 //	printf("step %d\n", token->type);
 	if(flag == 1 && token->type != TyLbra){
 		cout << "{ expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 		exit(-1);
 	}
 	node *n = new node;
-	if(token->type == TyIf){
+	if(token->type == TyIf){//условие
 		n->Type = TyIf;
 		n->lexeme = "si";
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
-		n->son1 = par_exp(1);
+		n->son1 = par_exp(1);//ожидаютс€ скобочки
 		n->son2 = step(0);
 		if(token->type == TyElse){
 			n->Type = TyElse;
@@ -616,14 +615,14 @@ node* Parser::step(int flag){
 			*token = lexer->GetToken();
 			n->son3 = step(0);
 		}
-	}else if(token->type == TyWhile){
+	}else if(token->type == TyWhile){//цикл 01
 		n->Type = TyWhile;
 		n->lexeme = "dum";
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		n->son1 = par_exp(1);		
 		n->son2 = step(0);
-	}else if(token->type == TyDo){
+	}else if(token->type == TyDo){//цикл 10
 		n->Type = TyDo;
 		n->lexeme = "facite";
 		token_old = token->lexeme;
@@ -642,14 +641,14 @@ node* Parser::step(int flag){
 		}
 		token_old = token->lexeme;
 		*token = lexer->GetToken();	
-	}else if(token->type == TySemicolon){
+	}else if(token->type == TySemicolon){// ;
 		n->Type = 0;
 		n->lexeme = ";";
 		token_old = token->lexeme;
 		*token = lexer->GetToken();			
-	}else if(token->type == TyLbra){
-		level += 1;		
-		if(level > 9){
+	}else if(token->type == TyLbra){// {
+		level += 1;	
+		if(level > 9){//слишком больша€ глубина вложенности
 			cout << "error array id" << endl;
 			exit(-1);
 		}
@@ -711,7 +710,7 @@ node* Parser::step(int flag){
 	return n;
 }
 
-node* Parser::func(){
+node* Parser::func(){//‘”Ќ ÷»»
 	node *node1 = new node;
 	if(token->type != TyDef){
 		return NULL;
@@ -725,13 +724,13 @@ node* Parser::func(){
 	n1->Type = TyDef;
 	n1->lexeme = "Def";
 	n1->son1 = term();
-	if(n1->son1->Type != TyInt && n1->son1->Type != TyFloat){
+	if(n1->son1->Type != TyInt && n1->son1->Type != TyFloat){//если функци€ не возвращает инт или флоат - ошибка
 		cout << "Verum or totus expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 		exit(-1);
 	}
 	int tmp = 0;
 	node *n2 = new node;
-	if(token->lexeme == "("){
+	if(token->lexeme == "("){//пошли передаваемые аргументы
 		level += 1;		
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
@@ -749,7 +748,7 @@ node* Parser::func(){
 			tmp++;
 		}
 		level -= 1;
-	}else{
+	}else{//или не пошли
 		cout << "( expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 		exit(-1);
 	}
@@ -765,15 +764,15 @@ node* Parser::func(){
 	return node1;
 }
 
-node Parser::Parun(string s){
+node Parser::Parun(string s){//начало проверки
 	lexer->start(s);
 	node node1;
 	lexer->nustring = 0;
 	token_old = token->lexeme;
 	*token = lexer->GetToken();
 	level = 0;
-	node1.son2 = func();
-	if(token->type == TyMain){
+	node1.son2 = func();//а есть ли функции?
+	if(token->type == TyMain){//а теперь ожидаетс€ main
 		node *nod1 = new node;
 		node1.son1 = nod1;
 		node1.Type = Manus;
@@ -785,7 +784,7 @@ node Parser::Parun(string s){
 		*token = lexer->GetToken();
 		nod1->son1 = step(1);
 	}
-	if(token->type != TyEOF){
+	if(token->type != TyEOF){//ну и должно заканчиватьс€ концом файла
 		cout << "Invalid statement syntax  " << token->type << "    " << token->lexeme << endl;
 		exit(-1);		
 	}

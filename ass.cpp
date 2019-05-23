@@ -281,7 +281,7 @@ string Ass::runCode(node *n, int flag){
 			break;
 		}
 	/*	case TyString:{
-			out += "\tmov ";
+			out += "\tmov\t";
 			out += n->lexeme;
 			out += ", %eax";
 			out += "\n";
