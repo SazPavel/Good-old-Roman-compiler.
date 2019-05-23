@@ -179,7 +179,7 @@ string Ass::runCode(node *n, int flag){
 						break;
 					}
 					default:{
-						out += "%eax,\t";
+						out += "%eax, ";
 						out += to_string(flag * 8 + 16);
 						out += "(%rsp)\n\tmov\t%eax, ";
 						break;
@@ -275,9 +275,9 @@ string Ass::runCode(node *n, int flag){
 			out += "\tmov\t$";
 			out += to_string(n->count*4);
 			out += ", %ebx\n";
-			out += "\tmov\t(";
+			out += "\tmov\t";
 			out += name;
-			out += "), %eax\n";
+			out += "(%ebx), %eax\n";
 			break;
 		}
 	/*	case TyString:{
