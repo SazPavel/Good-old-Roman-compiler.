@@ -1,11 +1,7 @@
 #test
-definire totus F(totus n totus k totus i totus o totus y){
-    eventus n;
-    o = o + 1;
-    redi o;
-}
 SPQR{
-   totus h = 1;
-   h = F(h 2 3 4 7);
-   eventus h;
+   filum g =  "g";
+   filum gg = "gg";
+   gg = g + gg;
+   eventus gg;
 }

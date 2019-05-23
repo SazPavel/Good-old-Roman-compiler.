@@ -45,8 +45,11 @@ int Parser::found_str_id(node *tree){
 	int idn = (hash_fn(tree->son1->lexeme))%SIZEID;
 	for(int i = SIZEI - 1; i >= 0; i--){
 		if((tree->son1->lexeme == id[idn][i].value || tree->son1->lexeme == id[idn][i].str) && id[idn][i].level <= tree->son1->level){
-		//	cout << tree->son1->lexeme << "   " << id[idn][i].value << endl;
-			id[idn][i].str = tree->son2->lexeme;
+			//cout << tree->son1->lexeme << "   " << id[idn][i].str << endl;
+			if(id[idn][i].str == " ")
+				id[idn][i].str = tree->son2->lexeme;
+			id[idn][i].count = id[idn][i].str.size();
+
 			return idn;
 		}		
 	}
@@ -58,6 +61,7 @@ int Parser::found_str_id(node *tree){
 			id[idn][i].value = tree->son1->lexeme;
 			id[idn][i].level = 0;
 			id[idn][i].sublevel = 0;
+			id[idn][i].count = id[idn][i].str.size();
 			return idn;
 		}
 	}

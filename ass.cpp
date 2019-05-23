@@ -94,7 +94,7 @@ string Ass::runTable(){
 	//строки нужно писать после обычных переменных
 	for(int i = 0; i < SIZEID; i++){
 		for(int j = 0; j < SIZEI; j++){
-			if(parser->id[i][j].Type == TyString){
+			if(parser->id[i][j].Type == TyString || parser->id[i][j].Type == TyStringname){
 				out += "a";
 				out +=  to_string(hash_fn(parser->id[i][j].value));
 				out +=  to_string(parser->id[i][j].level);
@@ -102,6 +102,15 @@ string Ass::runTable(){
 				out += ": \n\t.string ";
 				out +=  parser->id[i][j].str;
 				out += "\n";
+				out += "\t.set a";
+				out +=  to_string(hash_fn(parser->id[i][j].value));
+				out +=  to_string(parser->id[i][j].level);
+				out +=  to_string(parser->id[i][j].sublevel);
+				out += "_length, . - a";
+				out +=  to_string(hash_fn(parser->id[i][j].value)); 
+				out +=  to_string(parser->id[i][j].level);
+				out +=  to_string(parser->id[i][j].sublevel);
+				out += " - 1\n";
 			}
 		}
 	}
@@ -295,17 +304,29 @@ string Ass::runCode(node *n, int flag){
 		case TyStringname:{//переменная типа строка?
 			string name = findName(n);
 			out += "\tmov\t(";
-			out += ".";
 			out += name;
 			out += "), %eax\n";
 			break;
 		}
-		case TyPlus:{//сложение (К.О)	
-			runCode(n->son2);
-			//from eax to ecx
-			out += "\tmov\t%eax, %ecx\n";
-			runCode(n->son1);
-			out += "\tadd\t%ecx, %eax\n";
+		case TyPlus:{//сложение (К.О)
+			if(n->son1->Type == TyString || n->son1->Type == TyStringname){
+				out += "\tleaq\t(";
+				out +=  findName(n->son1);
+				out += "), %rdx\n";
+				out += "\tleaq\t(";
+				out +=  findName(n->son2);
+				out += "), %rcx\n";				
+				out += "\tcall\tstrcat\n";
+				out += "\tmov\t("; 
+				out +=  findName(n->son2);
+				out += "), %eax\n";
+			}else{
+				runCode(n->son2);
+				//from eax to ecx
+				out += "\tmov\t%eax, %ecx\n";
+				runCode(n->son1);
+				out += "\tadd\t%ecx, %eax\n";
+			}
 			break;
 		}
 		case TyMinus:{//вычитание (2К.О)
@@ -357,13 +378,13 @@ string Ass::runCode(node *n, int flag){
 				}
 				case(TyStringname):{
 					string name = findName(n->son1);
-    				out += "pushq\t%rbp\n\tsubq\t$48, %rsp\n\tmovq\t%rsp, %rbp\n\tleaq\t(";
+    				out += "\tpushq\t%rbp\n\tsubq\t$48, %rsp\n\tmovq\t%rsp, %rbp\n\tleaq\t(";
     				out += 	name;
 					out += "), %rdx\n\tleaq\t.prints_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$48, %rsp\n\tpopq\t%rbp\n";
 					break;
 				}
 				case(TyMasI):{
-					out += "pushq\t%rbp\n\tsubq\t$32, %rsp\n\tmovq\t%rsp, %rbp\n\t\tmov\t%eax, %edx\n\tlea\t.printi_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$32, %rsp\n\tpopq\t%rbp\n";
+					out += "\tpushq\t%rbp\n\tsubq\t$32, %rsp\n\tmovq\t%rsp, %rbp\n\t\tmov\t%eax, %edx\n\tlea\t.printi_format(%rip), %rcx\n\tcall\tprintf\n\tmov\t$0, %eax\n\taddq\t$32, %rsp\n\tpopq\t%rbp\n";
 					break;
 				}
 				//TODO MasF
