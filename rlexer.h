@@ -11,7 +11,7 @@ using namespace std;
 // 'si': IF, 'aliud': ELSE, 'facite': DO, 'dum': WHILE, 'totus': INT, 'verum': FLOAT 'QED': return 'SPQR': main, 'filum': string, 'paritas': equal, 'eventus': print, 'definire': def
 
 
-enum LexType { TyError, TyIdentifier, TyNumberF, TyNumberI, TyMas, TyString, TyLbra, TyRbra, TyEqual, TyLpar, TyRpar, TyPlus, TyMinus, TyMul, TyDivision, TyLess, TyOver, TyIf, TyElse, TyDo, TyWhile, TySemicolon, TyInt, TyFloat, TyStringname, TyPrint, TyReturn, TyMain, TySet, TyEql, TyEOF, Expr, SEQ, LessEq, OverEq, TyMasI, TyMasF, TyDef, Manus, Func, TyTemp};
+enum LexType { TyError, TyIdentifier, TyNumberF, TyNumberI, TyMas, TyMasS, TyString, TyLbra, TyRbra, TyEqual, TyLpar, TyRpar, TyPlus, TyMinus, TyMul, TyDivision, TyLess, TyOver, TyIf, TyElse, TyDo, TyWhile, TySemicolon, TyInt, TyFloat, TyStringname, TyPrint, TyReturn, TyMain, TySet, TyEql, TyEOF, Expr, SEQ, LessEq, OverEq, TyMasI, TyMasF, TyDef, Manus, Func, TyTemp};
 	
 enum LexerMode { LeNormal, LeString, LeComment };
 class Token {
@@ -38,6 +38,7 @@ class Lexer {
 		string run(string s);
 		
 		bool IsMas(string lexeme);
+		bool IsMasS(string lexeme);
 		bool IsIdentif(string lexeme);
 		bool IsNumberI(string lexeme);
 		bool IsNumberF(string lexeme);

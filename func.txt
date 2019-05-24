@@ -1,0 +1,25 @@
+#test
+definire totus F(totus n totus k verum j totus i totus o){
+    eventus n;
+    eventus "\n";
+    eventus k;
+    eventus "\n";
+    eventus j;
+    eventus "\n";
+    eventus i;
+    eventus "\n";
+    eventus o;
+    eventus "\n";
+    o = o + 1;
+    redi o;
+}
+SPQR{
+   totus h = 1;
+   totus g = 2;
+   verum p = 7.9;
+   totus j = 3;
+   totus l = 8;
+   h = F(h g p j l);
+   eventus h;
+
+}

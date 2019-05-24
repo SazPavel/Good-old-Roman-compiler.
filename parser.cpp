@@ -12,6 +12,15 @@ string mastoi(string str, int *count){//делит лексему массив на имя массива и эл
 	return str;
 }
 
+string masStoi(string str, string *count){//делит лексему массив на имя массива и элемент
+	int found = str.find("[");
+	int found2 = str.find("]");
+	string counts = str.substr(found+1, found2-2);
+	*count = counts;
+	str = str.substr(0, found);
+	return str;
+}
+
 string itofl(string str){//превращает инт во флоат
 	return str +".0";
 }
@@ -81,6 +90,7 @@ void Parser::treeprint(node *tree, int n){//печатает на экран дерево
     	treeprint(tree->son2, n + 3);
     	treeprint(tree->son3, n + 3);
 		if((tree->Type == TySet && tree->son1->Type == TyStringname && tree->son2->Type == TyString) || (tree->Type == TyPrint && tree->son1->Type == TyString)){//если встречает строку пытается записать значение в таблицу идентификаторов
+			int s = found_str_id(tree);
 			if(s == -1){
 				cout << " Strange error " << endl;
 			}else{
@@ -95,6 +105,23 @@ void Parser::treeprint(node *tree, int n){//печатает на экран дерево
     }
 }
 
+int Parser::found(node *n){
+	int idn = (hash_fn(n->id.value))%SIZEID;
+	for(int i = SIZEI - 1; i >= 0; i--){
+		if(n->id.value == id[idn][i].value){
+			n->id.Type = id[idn][i].Type;
+			if(n->id.Type != TyInt){
+				cout << "need integer" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
+				exit(-1);
+			}
+			n->id.level = id[idn][i].level;
+			n->id.sublevel = id[idn][i].sublevel;
+			return idn;
+		}
+	}	
+	return -1;		
+}
+
 int Parser::found_id(Token *token, node *n, int f, int mas){//ищет переменную в таблице идентификаторов
 	int idn = (hash_fn(token->lexeme))%SIZEID;
 	if(f){//если нужно создать новую
@@ -102,7 +129,6 @@ int Parser::found_id(Token *token, node *n, int f, int mas){//ищет переменную в 
 			if(id[idn][i].level == level && id[idn][i].sublevel == sublevel[level])
 				return -1;	
 			if(id[idn][i].Type == 0){
-				
 				id[idn][i].Type = token->type;
 				id[idn][i].count = 1;				
 				id[idn][i].BaseType = token->type;
@@ -331,6 +357,25 @@ node* Parser::term(){//переменные, числа, строки, массивы, чебуреки, горячая кук
 		*token = lexer->GetToken();
 		return n;
 	}
+	if(token->type == TyMasS){
+		node *n = new node;
+		string mas;
+		token->lexeme = masStoi(token->lexeme, &mas);
+    	if(found_id(token, n, 0, 1) == -1){
+			cout << token->lexeme << " was not declarated " << " string " << token->str << " position " << token->pos << " after " << token_old  << endl;
+			exit(-1);
+		}	
+		n->count = 111;
+		n->id.value = mas;
+		int tmp = found(n);
+		if(tmp == -1){
+			cout << token->lexeme << " was not declarated " << " string " << token->str << " position " << token->pos << " after " << token_old  << endl;
+			exit(-1);
+		}	
+		token_old = token->lexeme;
+		*token = lexer->GetToken();
+		return n;
+	}
 	return par_exp(0);
 }
 
@@ -436,7 +481,6 @@ node* Parser::summa(){
 }
 
 node* Parser::test(){//логические тесты
-//	printf("test\n");
 	node *n = new node;
 	n = summa();
 	node *n1 = new node;
@@ -510,7 +554,7 @@ node* Parser::express(){
 	}
 	node *n = new node;
 	n = test();
-	if((n->Type == TyInt || n->Type == TyFloat || n->Type == TyStringname || n->Type == TyMasI || n->Type == TyMasF) && token->type == TyEqual){//если присвоение значения
+	if((n->Type == TyInt || n->Type == TyFloat || n->Type == TyStringname || n->Type == TyString || n->Type == TyMasI || n->Type == TyMasF) && token->type == TyEqual){//если присвоение значения
 		node *n1 = new node;
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
@@ -689,7 +733,7 @@ node* Parser::step(int flag){//основная проверка
 		token_old = token->lexeme;
 		*token = lexer->GetToken();
 		n->son1 = term();
-		if(token->type != TySemicolon || (n->son1->Type != TyInt && n->son1->Type != TyFloat)){
+		if(token->type != TySemicolon || (n->son1->Type != TyInt && n->son1->Type != TyFloat && n->son1->Type != TyIdentifier)){
 			cout << "; expected" << " string " << token->str << " position " << token->pos << " between " << token_old << " & " << token->lexeme << endl;
 			exit(-1);
 		}

@@ -6,9 +6,10 @@ string type_to_str(int type){
 	switch(type){
 		case TyError: return "error";
 		case TyIdentifier: return "identif";
-		case TyNumberI: return "num int";
-		case TyNumberF: return "num float";
+		case TyNumberI: return "num i";
+		case TyNumberF: return "num f";
 		case TyMas: return "mas";
+		case TyMasS: return "mas";
 		case TyString: return "string";
 		case TyLbra: return "LBRA";
 		case TyRbra: return "RBRA";
@@ -29,7 +30,7 @@ string type_to_str(int type){
 		case TySemicolon: return ";";
 		case TyInt: return "int";
 		case TyFloat: return "float";
-		case TyStringname: return "stringname";
+		case TyStringname: return "string";
 		case TyReturn: return "return";
 		case TyMain: return "main";
 		case TySet: return "set";
@@ -116,7 +117,7 @@ string Lexer::step(){
 				if(tmp =='['){
 					a = a + (char)tmp;
 					position++;
-					while(IsNum(s[position])){
+					while(IsNum(s[position]) || IsLetter(s[position])){
 						a = a + (char)s[position];
 						position++;
 					}
@@ -198,8 +199,35 @@ bool Lexer::IsMas(string lexeme){
 		}
 	}
 	for(; i< len; i++){
-		if(!isdigit(lexeme[i])){
-			if(lexeme[i] == ']') return true;
+		if(!IsNum(lexeme[i])){
+			if(lexeme[i] == ']'){
+				return true;
+			} 
+			else
+				return false;
+		}	
+	}
+	return false;
+}
+
+bool Lexer::IsMasS(string lexeme){
+	int len = lexeme.length();
+	if(len == 0) return false;	
+	int i;
+	for (i = 0; i < len; i++) {
+		if(!IsLetter(lexeme[i])){
+			if(lexeme[i] != '[') return false;
+			else{
+				i ++;
+				break;
+			}
+		}
+	}
+	for(; i< len; i++){
+		if(!IsLetter(lexeme[i])){
+			if(lexeme[i] == ']'){
+				return true;
+			} 
 			else
 				return false;
 		}	
@@ -286,6 +314,7 @@ LexType Lexer::getLexemeType(string lexeme) {
 		if(IsNumberF(lexeme)) return TyNumberF;
 		if(IsString(lexeme)) return TyString;
 		if(IsMas(lexeme)) return TyMas;
+		if(IsMasS(lexeme)) return TyMasS;
 		if(lexeme == "\0") return TyEOF;
 		return TyError;
 }
@@ -320,7 +349,7 @@ Token Lexer::GetToken(){
 	token.pos = this->pos - token.lexeme.length();
 //	cout << token.pos << "  pos  " << token.lexeme << "  lexeme " << "  string " << token.str << endl;
 	if(token.type == TyError){
-		cout << "error in string " << token.str << " position " << token.pos <<  "  " << token.lexeme <<endl;
+		cout << "Lexer error in string " << token.str << " position " << token.pos <<  "  " << token.lexeme <<endl;
 		exit(1);
 	}
 	return token;

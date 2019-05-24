@@ -272,8 +272,20 @@ string Ass::runCode(node *n, int flag){
 		case TyMasI:
 		case TyMasF:{//массивы
 			string name = findName(n);
-			out += "\tmov\t$";
-			out += to_string(n->count*4);
+			out += "\tmov\t";
+			if(n->count == 111){
+				out += "(a";				
+				out += to_string(hash_fn(n->id.value));
+				out += to_string(n->id.level);
+				out += to_string(n->id.sublevel);
+				out += "), %ecx\n";	
+				out += "\tmov\t$4, %eax\n";
+				out += "\tmul\t%ecx\n";
+				out += "\tmov\t%eax";
+			}else{
+				out += "$";
+				out += to_string(n->count*4);
+			}
 			out += ", %ebx\n";
 			out += "\tmov\t";
 			out += name;
@@ -311,48 +323,95 @@ string Ass::runCode(node *n, int flag){
 		case TyPlus:{//сложение (К.О)
 			if(n->son1->Type == TyString || n->son1->Type == TyStringname){
 				out += "\tleaq\t(";
-				out +=  findName(n->son1);
+				out +=  findName(n->son2);
 				out += "), %rdx\n";
 				out += "\tleaq\t(";
-				out +=  findName(n->son2);
+				out +=  findName(n->son1);
 				out += "), %rcx\n";				
 				out += "\tcall\tstrcat\n";
 				out += "\tmov\t("; 
-				out +=  findName(n->son2);
+				out +=  findName(n->son1);
 				out += "), %eax\n";
 			}else{
+				if(n->son1->Type == TyFloat || n->son1->Type == TyNumberF){
 				runCode(n->son2);
-				//from eax to ecx
-				out += "\tmov\t%eax, %ecx\n";
+				out += "\tmov\t%eax, .float0(%rip)\n";
+				out += "\tmovss\t.float0(%rip), %xmm1\n";
 				runCode(n->son1);
-				out += "\tadd\t%ecx, %eax\n";
+				out += "\tmov\t%eax, .float0(%rip)\n";
+				out += "\tmovss\t.float0(%rip), %xmm0\n";
+				out += "\taddss\t%xmm1, %xmm0\n";
+				out += "\tmovss\t%xmm0, .float0(%rip)\n";
+				out += "\tmov\t.float0(%rip), %eax\n";
+				}else{
+					runCode(n->son2);
+					out += "\tmov\t%eax, %ecx\n";
+					runCode(n->son1);
+					out += "\tadd\t%ecx, %eax\n";
+				}
 			}
 			break;
 		}
 		case TyMinus:{//вычитание (2К.О)
-			runCode(n->son2);
-			out += "\tmov\t%eax, %ecx\n";
-			//from eax to ecx
-			runCode(n->son1);
-			out += "\tsub\t%ecx, %eax\n";
+			if(n->son1->Type == TyFloat || n->son1->Type == TyNumberF){
+				runCode(n->son2);
+				out += "\tmov\t%eax, .float0(%rip)\n";
+				out += "\tmovss\t.float0(%rip), %xmm1\n";
+				runCode(n->son1);
+				out += "\tmov\t%eax, .float0(%rip)\n";
+				out += "\tmovss\t.float0(%rip), %xmm0\n";
+				out += "\tsubss\t%xmm1, %xmm0\n";
+				out += "\tmovss\t%xmm0, .float0(%rip)\n";
+				out += "\tmov\t.float0(%rip), %eax\n";
+			}else{
+				runCode(n->son2);
+				out += "\tmov\t%eax, %ecx\n";
+				//from eax to ecx
+				runCode(n->son1);
+				out += "\tsub\t%ecx, %eax\n";
+			}
 			break;
 		}
 		case TyMul:{//умножение (3 К.О)
-			runCode(n->son2);
-			out += "\tmov\t%eax, %ecx\n";	
-			//from eax to ecx
-			runCode(n->son1);
-			out += "\tmul\t%ecx\n";
-			//mul
+			if(n->son1->Type == TyFloat || n->son1->Type == TyNumberF){
+				runCode(n->son2);
+				out += "\tmov\t%eax, .float0(%rip)\n";
+				out += "\tmovss\t.float0(%rip), %xmm1\n";
+				runCode(n->son1);
+				out += "\tmov\t%eax, .float0(%rip)\n";
+				out += "\tmovss\t.float0(%rip), %xmm0\n";
+				out += "\tmulss\t%xmm1, %xmm0\n";
+				out += "\tmovss\t%xmm0, .float0(%rip)\n";
+				out += "\tmov\t.float0(%rip), %eax\n";
+			}else{
+				runCode(n->son2);
+				out += "\tmov\t%eax, %ecx\n";	
+				//from eax to ecx
+				runCode(n->son1);
+				out += "\tmul\t%ecx\n";
+				//mul
+			}
 			break;
 		}
 		case TyDivision:{//деление (капитан очевидность сегодня в ударе)
-			runCode(n->son2);
-			out += "\tmov\t%eax, %ecx\n";	
-			//from eax to ecx
-			runCode(n->son1);
-			out += "\tmov\t$0, %edx\n\tdiv\t%ecx\n";
-			//division
+			if(n->son1->Type == TyFloat || n->son1->Type == TyNumberF){
+				runCode(n->son2);
+				out += "\tmov\t%eax, .float0(%rip)\n";
+				out += "\tmovss\t.float0(%rip), %xmm1\n";
+				runCode(n->son1);
+				out += "\tmov\t%eax, .float0(%rip)\n";
+				out += "\tmovss\t.float0(%rip), %xmm0\n";
+				out += "\tdivss\t%xmm1, %xmm0\n";
+				out += "\tmovss\t%xmm0, .float0(%rip)\n";
+				out += "\tmov\t.float0(%rip), %eax\n";
+			}else{
+				runCode(n->son2);
+				out += "\tmov\t%eax, %ecx\n";	
+				//from eax to ecx
+				runCode(n->son1);
+				out += "\tmov\t$0, %edx\n\tdiv\t%ecx\n";
+				//division
+			}
 			break;
 		}
 		case TyPrint:{//вывод на экран
@@ -367,7 +426,7 @@ string Ass::runCode(node *n, int flag){
 					out += "\tpushq\t%rbp\n\tsubq\t$64, %rsp\n\tmovq\t%rsp, %rbp\n";
 					if(n->son1->Type == TyFloat){
 						string name = findName(n->son1);
-						out += "\tmovss\t.";
+						out += "\tmovss\t";
 						out += name;
 						out += "(%rip), %xmm0\n";
 					}else{
@@ -423,62 +482,66 @@ string Ass::runCode(node *n, int flag){
 			break;
 		}
 		case TyDo:{
+			int loop = num_loop;
 			out += "DO";
-			out += to_string(num_loop);	
+			out += to_string(loop);	
 			out += ":\n";
 			runCode(n->son1);
 			runCode(n->son2);
 			out += " DO";
-			out += to_string(num_loop);
+			out += to_string(loop);
 			out += "\n";
 			num_loop += 1;
 			break;
 		}
 		case TyWhile:{
+			int loop = num_loop;
 			out += "WHILE";
-			out += to_string(num_loop);	
+			out += to_string(loop);	
 			out += ":\n";
 			runCode(n->son1, 1);
 			out += " DO";
-			out += to_string(num_loop);
+			out += to_string(loop);
 			out += "\n";
 			runCode(n->son2);
 			out += "\tjmp\tWHILE";
-			out += to_string(num_loop);	
+			out += to_string(loop);	
 			out += "\n";
 			out += "DO";
-			out += to_string(num_loop);	
+			out += to_string(loop);	
 			out += ":\n";
 			num_loop += 1;
 			break;
 		}
 		case TyIf:{
+			int loop = num_loop;
 			runCode(n->son1, 1);
 			out += " IF";
-			out += to_string(num_loop);	
+			out += to_string(loop);	
 			out += "\n";
 			runCode(n->son2);			
 			out += "IF";
-			out += to_string(num_loop);	
+			out += to_string(loop);	
 			out += ":\n";
 			num_loop += 1;
 			break;
 		}
 		case TyElse:{
+			int loop = num_loop;
 			runCode(n->son1, 1);
 			out += " ELSE";
-			out += to_string(num_loop);	
+			out += to_string(loop);	
 			out += "\n";
 			runCode(n->son2);
 			out += "\tjmp\tIF";	
-			out += to_string(num_loop);	
+			out += to_string(loop);	
 			out += "\n";	
 			out += "ELSE";
-			out += to_string(num_loop);	
+			out += to_string(loop);	
 			out += ":\n";
 			runCode(n->son3);		
 			out += "IF";
-			out += to_string(num_loop);	
+			out += to_string(loop);	
 			out += ":\n";
 			num_loop += 1;
 			break;

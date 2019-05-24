@@ -1,0 +1,18 @@
+definire totus P(totus max){
+   eventus max;
+   redi max;
+}
+
+#mas
+SPQR{
+   totus h[5] = 1 2 3 8 5;
+   totus max = 0;
+   totus i = 0;
+   dum(i < 5){
+      si(max < h[i]){
+         max = h[i];
+      }
+      i = i + 1;
+   }
+   i = P(max);
+}

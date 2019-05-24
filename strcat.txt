@@ -1,0 +1,11 @@
+#string
+SPQR{
+   filum h = "\"g";
+   eventus h;
+   eventus "\n";
+   filum j = "g";
+   eventus j;
+   eventus "\n";
+   j = h + j;
+   eventus j;
+}

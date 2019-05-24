@@ -1,0 +1,17 @@
+
+SPQR{
+   verum p = 8.0;
+   verum j = 0.0;
+   j = p - 2;
+   eventus j;
+   eventus "\n";
+   j = p + 3;
+   eventus j;
+   eventus "\n";
+   j = p * 2;
+   eventus j;
+   eventus "\n";
+   j = p / 2.0;
+   eventus j;
+
+}

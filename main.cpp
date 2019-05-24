@@ -1,13 +1,17 @@
-#include "lexer.cpp"
-#include "parser.cpp"
-#include "ass.cpp"
+#include "roman.h"
 
 using namespace std;
 
 int main(){
 	ifstream fin;
-	fin.open("aaf.txt");
-	if(!fin.is_open()) return -1;
+	string name;
+	cout << "Enter file name" << endl;
+	cin >> name; 
+	fin.open(name + ".txt");
+	if(!fin.is_open()){
+		cout << "NO FILE" << endl;
+		return -1;
+	} 
 	Lexer lexer;
 	Lexer lexer1;
 	Token token;
@@ -34,11 +38,11 @@ int main(){
 	ofstream fout;
 	Ass ass(&parser);
 	string asst = ass.runTable();
-	fout.open("aaf.S");
+	fout.open(name + ".S");
 	fout << asst; 
 	string assc = ass.runCode(&n);
 	fout << assc;
     fout.close(); 
-	//system("pause");
+	system("pause");
 	return 0;
 }
